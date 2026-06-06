@@ -41,27 +41,28 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Arsitektur Anti-Bocor Terkoreksi */
+        /* Arsitektur Anti-Bocor - DIKEMBALIKAN PERSIS KE STRUKTUR AWAL BUNDA */
         .screen { position: absolute; inset: 0; background-color: #fcfaf9; z-index: 10; overflow-y: auto; overflow-x: hidden; }
         .sub-page { position: absolute; inset: 0; z-index: 60; background-color: #fcfaf9; overflow-y: auto; overflow-x: hidden; }
-        
+        .tab-content { display: none; animation: fadeIn 0.3s ease-out forwards; }
+        .tab-content.active { display: block; }
+
         /* Animations */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         @keyframes barGrow { from { height: 0%; } }
         
-        /* Animasi Lembut untuk Emoticon (Hanya Goyang Sedikit) */
+        /* Animasi Sangat Lembut untuk Emoticon (Tidak Pusing) */
         @keyframes gentleWobble { 
-            0%, 100% { transform: rotate(0deg); } 
-            25% { transform: rotate(-3deg); } 
-            75% { transform: rotate(3deg); } 
+            0%, 100% { transform: translateY(0px); } 
+            50% { transform: translateY(-4px); } 
         }
         
         .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
         .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
         .anim-pop { animation: pop 0.4s ease-out forwards; }
-        .anim-gentle { animation: gentleWobble 4s ease-in-out infinite; }
+        .anim-gentle { animation: gentleWobble 3s ease-in-out infinite; }
         .grow-bar { animation: barGrow 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; transform-origin: bottom; }
 
         .btn-soft { transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); cursor: pointer; }
@@ -125,7 +126,7 @@
         </div>
     </div>
 
-    <div id="screen-register-ibu" class="screen hidden overflow-y-auto">
+    <div id="screen-register-ibu" class="screen hidden">
         <div class="px-5 py-8 min-h-full">
             <button onclick="nav('screen-role')" class="w-10 h-10 flex items-center justify-center bg-white border border-border_color rounded-full text-text_main mb-6 btn-soft shadow-sm"><span class="material-symbols-rounded">arrow_back</span></button>
             <h2 class="font-heading text-2xl font-bold text-primary mb-6">Lengkapi Profil Bunda</h2>
@@ -141,16 +142,32 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-text_muted mb-1.5 uppercase tracking-wider">Domisili</label>
-                        <input type="text" placeholder="Kota" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+                        <select id="reg-city" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm text-text_muted">
+                            <option value="">Pilih Kota...</option>
+                            <option value="Bandung, Jawa Barat">Bandung, Jawa Barat</option>
+                            <option value="Jakarta Selatan">Jakarta Selatan</option>
+                            <option value="Surabaya, Jawa Timur">Surabaya, Jawa Timur</option>
+                        </select>
                     </div>
                 </div>
                 <div class="pt-6 border-t border-border_color">
                     <label class="block text-sm font-bold text-primary mb-3">Data Anak Pertama</label>
                     <input type="text" placeholder="Nama Anak" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary mb-3 shadow-sm">
                     <div class="grid grid-cols-2 gap-3 mb-3">
-                        <input type="number" placeholder="Umur" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
-                        <select class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
-                            <option>Laki-laki</option><option>Perempuan</option>
+                        <select class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm text-text_muted">
+                            <option value="">Umur Anak...</option>
+                            <option value="0">0 Tahun (< 1 th)</option>
+                            <option value="1">1 Tahun</option><option value="2">2 Tahun</option><option value="3">3 Tahun</option>
+                            <option value="4">4 Tahun</option><option value="5">5 Tahun</option><option value="6">6 Tahun</option>
+                            <option value="7">7 Tahun</option><option value="8">8 Tahun</option><option value="9">9 Tahun</option>
+                            <option value="10">10 Tahun</option><option value="11">11 Tahun</option><option value="12">12 Tahun</option>
+                            <option value="13">13 Tahun</option><option value="14">14 Tahun</option><option value="15">15 Tahun</option>
+                            <option value="16">16 Tahun</option><option value="17">17 Tahun</option>
+                        </select>
+                        <select class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm text-text_muted">
+                            <option value="">Jenis Kelamin...</option>
+                            <option>Laki-laki</option>
+                            <option>Perempuan</option>
                         </select>
                     </div>
                     <select class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm text-text_muted">
@@ -163,7 +180,7 @@
         </div>
     </div>
 
-    <div id="screen-login" class="screen hidden overflow-y-auto">
+    <div id="screen-login" class="screen hidden">
         <div class="flex flex-col justify-center px-6 min-h-full py-10">
             <div class="text-center mb-10">
                 <div class="w-20 h-20 bg-primary_light/30 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl anim-gentle">👋</div>
@@ -171,14 +188,14 @@
                 <p class="text-sm text-text_muted">Masuk untuk melanjutkan perjalanan hebatmu.</p>
             </div>
             <div class="space-y-4 mb-10">
-                <input type="email" placeholder="Email Address" value="bunda@ruangibu.com" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
-                <input type="password" placeholder="Password" value="password123" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+                <input type="email" placeholder="Ketik Email Address..." class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+                <input type="password" placeholder="Ketik Password..." class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
             </div>
             <button onclick="nav('screen-mood')" class="w-full bg-cta text-white py-4 rounded-full font-bold text-base btn-soft shadow-lg">Masuk</button>
         </div>
     </div>
 
-    <!-- SCREEN 5: MOOD SELECTION HUB -->
+    <!-- SCREEN 5: MOOD SELECTION HUB (EMOTICON HALUS) -->
     <div id="screen-mood" class="screen hidden">
         <div class="px-5 py-8 flex flex-col min-h-full relative">
             <h2 class="font-heading text-2xl font-bold text-primary mb-2 mt-4">Bagaimana kondisi Bunda saat ini?</h2>
@@ -186,20 +203,19 @@
             
             <div class="grid grid-cols-2 gap-4 mb-auto z-10">
                 <div onclick="showMoodPopup('Kewalahan', 'Bunda tidak sendirian. Ambil jeda aman, menangislah jika perlu.', 'cara mengatasi burnout ibu anak abk')" class="group bg-surface border border-border_color p-6 rounded-[28px] text-center btn-soft cursor-pointer shadow-sm hover:border-primary hover:shadow-md transition-all">
-                    <!-- Text Emoji Asli (Super Jelas dan Anti Error) -->
-                    <div class="text-[64px] mb-2 anim-gentle drop-shadow-md transform group-hover:scale-110 transition-transform duration-300" style="animation-delay: 0.1s;">🤯</div>
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f92f/512.webp" alt="Kewalahan" class="w-16 h-16 mx-auto mb-3 anim-gentle transform group-hover:scale-105 transition-transform duration-300">
                     <span class="font-bold text-sm text-text_main">Kewalahan</span>
                 </div>
                 <div onclick="showMoodPopup('Penuh Harap', 'Energi positif Bunda sangat berarti. Yuk pertahankan!', 'afirmasi positif pagi hari')" class="group bg-surface border border-border_color p-6 rounded-[28px] text-center btn-soft cursor-pointer shadow-sm hover:border-primary hover:shadow-md transition-all">
-                    <div class="text-[64px] mb-2 anim-gentle drop-shadow-md transform group-hover:scale-110 transition-transform duration-300" style="animation-delay: 0.5s;">✨</div>
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/2728/512.webp" alt="Penuh Harap" class="w-16 h-16 mx-auto mb-3 anim-gentle transform group-hover:scale-105 transition-transform duration-300" style="animation-delay: 0.2s;">
                     <span class="font-bold text-sm text-text_main">Penuh Harap</span>
                 </div>
                 <div onclick="showMoodPopup('Lelah', 'Istirahat sejenak, Bun. Ambil nafas dalam-dalam, Anda luar biasa.', 'cara mengatasi ibu lelah fisik dan mental')" class="group bg-surface border border-border_color p-6 rounded-[28px] text-center btn-soft cursor-pointer shadow-sm hover:border-primary hover:shadow-md transition-all">
-                    <div class="text-[64px] mb-2 anim-gentle drop-shadow-md transform group-hover:scale-110 transition-transform duration-300" style="animation-delay: 0.2s;">🥱</div>
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f971/512.webp" alt="Lelah" class="w-16 h-16 mx-auto mb-3 anim-gentle transform group-hover:scale-105 transition-transform duration-300" style="animation-delay: 0.4s;" onerror="this.src='https://fonts.gstatic.com/s/e/notoemoji/latest/1f62b/512.webp'">
                     <span class="font-bold text-sm text-text_main">Lelah</span>
                 </div>
                 <div onclick="showMoodPopup('Semangat', 'Luar biasa Bun! Mari salurkan aura positif ini dalam aktivitas ceria.', 'aktivitas sensori anak seru')" class="group bg-surface border border-border_color p-6 rounded-[28px] text-center btn-soft cursor-pointer shadow-sm hover:border-primary hover:shadow-md transition-all">
-                    <div class="text-[64px] mb-2 anim-gentle drop-shadow-md transform group-hover:scale-110 transition-transform duration-300" style="animation-delay: 0.6s;">🔥</div>
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f525/512.webp" alt="Semangat" class="w-16 h-16 mx-auto mb-3 anim-gentle transform group-hover:scale-105 transition-transform duration-300" style="animation-delay: 0.6s;">
                     <span class="font-bold text-sm text-text_main">Semangat</span>
                 </div>
             </div>
@@ -236,34 +252,34 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- FLOW 2: MAIN APP (DASHBOARD & TABS)                      -->
+    <!-- MAIN APPLICATION WORKSPACE CONTAINER                     -->
     <!-- ======================================================== -->
-    
     <div id="screen-mainapp" class="screen hidden flex-col overflow-hidden">
         
-        <!-- HEADER STATIC -->
+        <!-- HEADER ECOSYSTEM -->
         <header class="shrink-0 bg-surface/95 backdrop-blur-md px-5 py-4 z-40 border-b border-border_color flex items-center justify-between relative">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-primary_light rounded-full flex items-center justify-center font-bold text-primary text-base" id="hdr-avatar">I</div>
+                <div class="w-10 h-10 bg-primary_light rounded-full flex items-center justify-center font-bold text-primary text-base cursor-pointer" id="hdr-avatar" onclick="showToast('Fitur edit profil segera hadir')">I</div>
                 <div>
                     <p class="text-[10px] text-text_muted font-bold uppercase tracking-wider mb-0.5">Selamat Datang</p>
-                    <h2 class="font-heading font-bold text-primary text-sm flex items-center gap-1 cursor-pointer">
-                        Bunda <span id="hdr-name">Ika</span> <span class="material-symbols-rounded text-[16px]">expand_more</span>
+                    <h2 class="font-heading font-bold text-primary text-sm flex items-center gap-1 cursor-pointer" onclick="showToast('Ganti profil anak')">
+                        Bunda <span id="hdr-name">Ika</span> <span class="material-symbols-rounded text-[14px]">edit</span>
                     </h2>
                 </div>
             </div>
-            <button class="relative p-2 rounded-full hover:bg-bg_app btn-soft" onclick="showToast('Notifikasi: Cek rapor progres anak Anda.')">
+            <button class="relative p-2 rounded-full hover:bg-bg_app btn-soft" onclick="showToast('Rapor analitik perkembangan anak sudah siap dilihat.')">
                 <span class="material-symbols-rounded text-text_muted text-[24px]">notifications</span>
                 <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-cta rounded-full border-2 border-white"></span>
             </button>
         </header>
 
-        <!-- CONTAINER TABS (Scrollable Area) -->
+        <!-- MAIN TAB AREA (Scrollable Area) -->
         <div id="tabs-container" class="flex-1 overflow-y-auto relative pb-safe">
             
-            <!-- ================= HOME TAB ================= -->
+            <!-- TAB: BERANDA / HOME -->
             <div id="tab-home" class="tab-content active px-5 py-5 space-y-6">
-                <div id="home-reminder-wrapper" class="hidden mb-2">
+                <!-- Reminder Jadwal -->
+                <div id="home-reminder-wrapper" class="hidden">
                     <h3 class="font-bold text-base text-primary mb-3">Jadwal Mendatang</h3>
                     <div id="home-jadwal-container" class="space-y-3"></div>
                 </div>
@@ -273,31 +289,32 @@
                     <p class="text-xs font-medium text-text_main italic leading-relaxed">"Progres 1% setiap hari adalah pencapaian luar biasa. Semangat, Bun!"</p>
                 </div>
 
-                <!-- Motivasi Harian -->
+                <!-- Motivasi Harian Section -->
                 <div class="bg-surface border border-border_color rounded-3xl p-5 shadow-sm space-y-2 relative overflow-hidden">
                     <div class="absolute -right-4 -bottom-4 text-primary_light/20 text-[100px] pointer-events-none"><span class="material-symbols-rounded" style="font-size: 100px;">format_quote</span></div>
                     <h4 class="font-heading font-bold text-sm text-primary flex items-center gap-1.5"><span class="material-symbols-rounded text-[18px]">auto_awesome</span> Motivasi Hari Ini</h4>
-                    <p class="text-xs text-text_main leading-relaxed relative z-10">"Bunda, kesabaranmu dalam melatih kontak mata dan sensori si kecil hari ini adalah pondasi kokoh masa depannya. Kamu hebat!"</p>
+                    <p class="text-xs text-text_main leading-relaxed relative z-10">"Bunda, kesabaranmu dalam melatih kontak mata dan sensori si kecil hari ini adalah pondasi kokoh masa depannya. Istirahat yang cukup ya malam ini."</p>
                 </div>
 
-                <!-- Modul Terkini -->
+                <!-- Overview Video Terbaru Section -->
                 <div>
-                    <h3 class="font-bold text-sm text-primary mb-3">Tontonan Hari Ini</h3>
-                    <div onclick="openSubPage('page-edu-detail')" class="bg-surface rounded-2xl border border-border_color overflow-hidden shadow-sm btn-soft cursor-pointer flex gap-3 p-3">
+                    <h3 class="font-bold text-sm text-primary mb-3">Modul Rekomendasi Terkini</h3>
+                    <div onclick="openEduDetail('Atasi Anak GTM Parah', 'Nutrisi', 'https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?w=400&q=80')" class="bg-surface rounded-2xl border border-border_color overflow-hidden shadow-sm btn-soft cursor-pointer flex gap-3 p-3">
                         <div class="w-24 h-16 bg-gray-200 rounded-xl relative shrink-0 overflow-hidden shadow-inner">
-                            <img src="https://images.unsplash.com/photo-1615486511484-92e172cb4fec?w=200&q=80" class="w-full h-full object-cover">
+                            <img src="https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?w=400&q=80" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/10 flex items-center justify-center"><span class="material-symbols-rounded text-white text-xl">play_circle</span></div>
                         </div>
                         <div class="flex-1 min-w-0 flex flex-col justify-center">
-                            <h4 class="font-bold text-xs text-text_main truncate">Mengatasi GTM Akibat Sensori</h4>
+                            <h4 class="font-bold text-xs text-text_main truncate">Eps 1: Mengatasi GTM Akibat Sensori</h4>
                             <p class="text-[10px] text-text_muted mt-1">Edukasi Terpopuler • 15 Menit</p>
                         </div>
                     </div>
                 </div>
 
+                <!-- Progress Berjalan -->
                 <div>
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-bold text-base text-primary">Progress Anak</h3>
+                        <h3 class="font-bold text-base text-primary">Progress Berjalan Anak</h3>
                         <button onclick="switchTab('tab-edu')" class="text-xs font-bold text-cta flex items-center gap-0.5 btn-soft">Detail <span class="material-symbols-rounded text-[16px]">chevron_right</span></button>
                     </div>
                     <div class="bg-surface rounded-3xl p-5 shadow-sm border border-border_color">
@@ -310,13 +327,15 @@
                     </div>
                 </div>
 
-                <!-- Explore di Home -->
+                <!-- Explore Cards Terintegrasi di Home -->
                 <div>
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-bold text-sm text-primary">Tempat Inklusi Terdekat</h3>
                         <button onclick="switchTab('tab-explore')" class="text-xs font-bold text-cta btn-soft">Lihat Semua</button>
                     </div>
-                    <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2" id="home-explore-list"></div>
+                    <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2" id="home-explore-list">
+                        <!-- JS injected horizontal lists here -->
+                    </div>
                 </div>
 
                 <div>
@@ -334,7 +353,7 @@
                 </div>
             </div>
 
-            <!-- ================= COMMUNITY TAB ================= -->
+            <!-- TAB: RUANG (COMMUNITY HUB) -->
             <div id="tab-community" class="tab-content hidden px-5 py-4 relative">
                 <div class="sticky top-0 bg-bg_app/95 backdrop-blur-md z-10 pb-4 pt-1 -mx-5 px-5 space-y-4">
                     <div class="relative">
@@ -349,7 +368,7 @@
                 <div class="space-y-4 pb-20" id="feed-container"></div>
             </div>
 
-            <!-- ================= EDUKASI TAB ================= -->
+            <!-- TAB: EDUKASI -->
             <div id="tab-edu" class="tab-content hidden pb-10">
                 <div class="px-5 pt-5 pb-2">
                     <div class="relative">
@@ -382,9 +401,9 @@
                         <h3 class="font-heading text-lg font-bold text-text_main">My Course</h3>
                         <button class="text-xs font-bold text-cta btn-soft" onclick="showToast('Menampilkan semua kelas terdaftar...')">See all</button>
                     </div>
-                    <div onclick="openSubPage('page-edu-detail')" class="bg-surface border border-border_color rounded-3xl p-4 shadow-sm flex gap-4 btn-soft cursor-pointer">
+                    <div onclick="openEduDetail('Atasi Anak GTM Parah', 'Nutrisi', 'https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?w=400&q=80')" class="bg-surface border border-border_color rounded-3xl p-4 shadow-sm flex gap-4 btn-soft cursor-pointer">
                         <div class="w-20 h-20 bg-primary_light rounded-2xl shrink-0 overflow-hidden relative flex items-center justify-center">
-                            <img src="https://images.unsplash.com/photo-1615486511484-92e172cb4fec?w=200&q=80" class="w-full h-full object-cover">
+                            <img src="https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?w=200&q=80" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="material-symbols-rounded text-white text-[28px]">play_arrow</span></div>
                         </div>
                         <div class="flex-1 py-1">
@@ -414,7 +433,7 @@
                 </div>
             </div>
 
-            <!-- ================= KONSULTASI TAB ================= -->
+            <!-- TAB: KONSULTASI -->
             <div id="tab-consult" class="tab-content hidden px-5 py-5 space-y-6">
                 <div class="flex gap-3 mb-2">
                     <div class="relative flex-1">
@@ -480,8 +499,9 @@
                 </div>
             </div>
 
-            <!-- ================= EXPLORE TAB ================= -->
+            <!-- TAB: EXPLORE / PETA INKLUSI -->
             <div id="tab-explore" class="tab-content hidden px-0 py-0 space-y-0 relative">
+                <!-- Headernya Tidak Di-sticky (Akan Ikut Scroll Sesuai Request) -->
                 <div class="bg-surface px-5 pt-5 pb-3 shadow-sm border-b border-border_color mb-2">
                     <div class="flex items-center justify-between mb-4 bg-bg_app p-3 rounded-full border border-border_color">
                         <div class="flex items-center gap-2 w-full">
@@ -748,7 +768,7 @@
                     <span class="material-symbols-rounded text-primary text-5xl">check_circle</span>
                 </div>
                 <h2 class="font-heading text-2xl font-bold mb-2">Consultation Confirmed!</h2>
-                <p class="text-sm opacity-90 mb-10">Tunjukkan antrean ini saat kedatangan di klinik.</p>
+                <p class="text-sm opacity-90 mb-10">Tunjukkan antrean ini saat kedatangan di resepsionis.</p>
                 
                 <div class="bg-white p-8 rounded-[32px] text-text_main w-full shadow-2xl mb-10 relative overflow-hidden">
                     <div class="absolute -top-4 -left-4 w-8 h-8 bg-primary rounded-full"></div>
@@ -763,7 +783,7 @@
                     <p class="text-xs text-text_muted mb-6 leading-relaxed" id="success-schedule">-</p>
                     
                     <div class="flex justify-between items-center border-t border-border_color pt-5">
-                        <span class="text-sm font-bold text-green-600 flex items-center gap-1"><span class="material-symbols-rounded text-[18px]">verified</span> Paid</span>
+                        <span class="text-sm font-bold text-green-600 flex items-center gap-1"><span class="material-symbols-rounded text-[18px]">verified</span> Booking Valid</span>
                         <span class="text-xs font-bold text-text_muted">ID: RUA-9921</span>
                     </div>
                 </div>
@@ -805,7 +825,7 @@
                 <button onclick="closeSubPage('page-edu-detail')" class="w-10 h-10 flex items-center justify-center bg-bg_app rounded-full text-text_main btn-soft"><span class="material-symbols-rounded">arrow_back</span></button>
                 <h2 class="font-bold text-base truncate text-primary" id="edu-det-title-bar">Course Details</h2>
             </div>
-            <div class="w-full aspect-video bg-black flex items-center justify-center relative cursor-pointer group" onclick="openYT('Edukasi Anak Ruang Ibu')">
+            <div class="w-full aspect-video bg-black flex items-center justify-center relative cursor-pointer group" onclick="openYT('Pentingnya Buah dan Sayur Anak')">
                 <img id="edu-det-img" src="" class="w-full h-full object-cover opacity-60">
                 <span class="material-symbols-rounded text-white text-[60px] absolute group-hover:scale-110 transition-transform">play_circle</span>
             </div>
@@ -876,13 +896,13 @@
                     <p class="text-[10px] font-bold text-primary mt-3 animate-pulse uppercase tracking-widest">Menganalisis Data...</p>
                 </div>
                 <div id="ai-result" class="hidden">
-                    <p class="text-xs leading-relaxed text-text_main font-medium" id="ai-desc">Luar biasa Bunda! Berdasarkan aktivitas terakhir, tingkat penyelesaian sangat baik. Disarankan untuk segera memulai <span class="font-bold text-cta">Modul Terapi Sensori</span>.</p>
+                    <p class="text-xs leading-relaxed text-text_main font-medium" id="ai-desc">Luar biasa Bunda! Berdasarkan aktivitas 7 minggu terakhir, tingkat penyelesaian Modul Nutrisi sangat baik. Disarankan untuk segera memulai <span class="font-bold text-cta">Modul Terapi Sensori</span>.</p>
                 </div>
             </div>
             <div class="pb-10"></div>
         </div>
 
-        <!-- 8. SUB-PAGE: EXPLORE DETAIL (Struktur Anti Numpuk & Fitur Bookmark & Zoom Gallery) -->
+        <!-- 8. SUB-PAGE: EXPLORE DETAIL -->
         <div id="page-explore-detail" class="sub-page hidden flex-col overflow-hidden">
             <div class="flex-1 overflow-y-auto pb-10 relative">
                 <div class="h-[280px] relative bg-gray-200">
@@ -949,7 +969,6 @@
 <script>
     // --- Inisiasi Dasar ---
     window.onload = () => { 
-        document.getElementById('screen-welcome').classList.add('active'); 
         renderEduCourses('Semua'); 
         renderExploreData('Semua'); 
     };
@@ -965,19 +984,27 @@
         }, 2500);
     }
 
-    // --- Onboarding Flow (Bebas Error) ---
+    // --- Onboarding Flow (STABIL 100%) ---
     function nav(id) {
+        // Sembunyikan semua screen murni pake classlist Tailwind
         document.querySelectorAll('.screen').forEach(s => {
+            s.classList.add('hidden');
             s.classList.remove('active', 'flex');
         });
+        
         const target = document.getElementById(id);
-        target.classList.add('active');
-        if(id === 'screen-mainapp') target.classList.add('flex');
+        target.classList.remove('hidden');
+        if(id === 'screen-mainapp') {
+            target.classList.add('flex', 'active');
+        } else {
+            target.classList.add('active');
+        }
         
         target.scrollTop = 0;
         
-        document.getElementById('mood-popup').style.display = 'none';
-        document.getElementById('mood-popup').classList.add('hidden');
+        const popup = document.getElementById('mood-popup');
+        popup.style.display = 'none';
+        popup.classList.add('hidden');
     }
 
     function saveProfile() {
@@ -1001,7 +1028,7 @@
 
     function openYT(q) { window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(q), '_blank'); }
 
-    // --- Main App Logic (Selalu Masuk Home) ---
+    // --- Main App Logic (SEMPURNA: Selalu masuk Home) ---
     function enterMainApp() {
         nav('screen-mainapp');
         renderCommunityFeed('All');
@@ -1011,9 +1038,12 @@
 
     function switchTab(id) {
         document.querySelectorAll('.tab-content').forEach(p => {
+            p.classList.add('hidden');
             p.classList.remove('active');
         });
+        
         const target = document.getElementById(id);
+        target.classList.remove('hidden');
         target.classList.add('active');
         document.getElementById('tabs-container').scrollTop = 0;
 
@@ -1021,6 +1051,7 @@
             btn.classList.remove('text-cta', 'text-primary'); btn.classList.add('text-text_muted');
             btn.querySelector('span').style.fontVariationSettings = "'FILL' 0";
         });
+        
         const activeBtn = document.getElementById('nav-' + id);
         if(activeBtn) {
             activeBtn.classList.remove('text-text_muted'); 
@@ -1029,7 +1060,11 @@
         }
 
         const fab = document.getElementById('fab-post');
-        if(id === 'tab-community') { fab.classList.remove('hidden'); fab.classList.add('flex'); } else { fab.classList.add('hidden'); fab.classList.remove('flex'); }
+        if(id === 'tab-community') { 
+            fab.classList.remove('hidden'); fab.classList.add('flex'); 
+        } else { 
+            fab.classList.add('hidden'); fab.classList.remove('flex'); 
+        }
     }
 
     function openSubPage(pageId) {
@@ -1038,7 +1073,7 @@
         if (pageId === 'page-expert-detail' || pageId === 'page-payment' || pageId === 'page-explore-detail' || pageId === 'page-chat') {
             target.classList.add('flex');
         } else {
-             target.classList.add('block'); 
+            target.classList.add('block'); 
         }
         target.classList.add('animate-slide-up');
         const scrollArea = target.querySelector('.overflow-y-auto');
@@ -1495,11 +1530,7 @@
     function renderExploreData(filter) {
         const topContainer = document.getElementById('explore-horizontal-list');
         const nearbyContainer = document.getElementById('explore-vertical-list');
-        
-        let filtered = exploreData;
-        if (filter !== 'Semua') {
-            filtered = exploreData.filter(d => d.cat === filter);
-        }
+        let filtered = exploreData; if (filter !== 'Semua') { filtered = exploreData.filter(d => d.cat === filter); }
 
         const topItems = filtered.filter(d => d.isTop).length > 0 ? filtered.filter(d => d.isTop) : filtered.slice(0,3);
         topContainer.innerHTML = topItems.map(d => `
@@ -1545,6 +1576,7 @@
         const data = exploreData.find(d => d.id === id);
         if(!data) return;
 
+        // Set DOM Elements
         document.getElementById('exp-det-img').src = data.img;
         document.getElementById('exp-det-title').innerText = data.name;
         document.getElementById('exp-det-rating').innerHTML = `<span class="material-symbols-rounded text-[14px]">star</span> ${data.rating}`;
@@ -1587,7 +1619,8 @@
     function openImageViewer(src) {
         document.getElementById('viewer-img').src = src;
         const viewer = document.getElementById('image-viewer');
-        viewer.style.display = 'flex';
+        viewer.classList.remove('hidden');
+        viewer.classList.add('flex');
         setTimeout(() => viewer.classList.remove('opacity-0'), 10);
     }
     function closeImageViewer() {
@@ -1598,6 +1631,7 @@
             viewer.classList.remove('flex');
         }, 300);
     }
+
 </script>
 </body>
 </html>
