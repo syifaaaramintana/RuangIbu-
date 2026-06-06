@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Ruang Ibu - Ecosystem</title>
+    
+    <!-- Tailwind & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#79555c", primary_light: "#f6c7cf",
+                        cta: "#C26A5A", bg_app: "#fcfaf9", surface: "#ffffff",
+                        text_main: "#2d2929", text_muted: "#817475", border_color: "#f0e8e9",
+                        med_blue: "#689ced", med_blue_light: "#eaf2fd"
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Plus Jakarta Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Environment */
+        body { background-color: #2a2a2a; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: 'Inter', sans-serif; color: #2d2929; }
+        
+        /* Mobile Frame Constraint */
+        #mobile-frame {
+            width: 100%; max-width: 414px; height: 100dvh; max-height: 896px; 
+            background-color: #fcfaf9; position: relative; overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.6);
+        }
+        @media (min-width: 480px) { #mobile-frame { border-radius: 40px; border: 8px solid #111; height: 95vh; } }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Arsitektur Anti-Bocor Terkoreksi */
+        .screen { position: absolute; inset: 0; background-color: #fcfaf9; z-index: 10; overflow-y: auto; overflow-x: hidden; }
+        .sub-page { position: absolute; inset: 0; z-index: 60; background-color: #fcfaf9; overflow-y: auto; overflow-x: hidden; }
+        
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @keyframes barGrow { from { height: 0%; } }
+        
+        /* Animasi Lembut untuk Emoticon (Hanya Goyang Sedikit) */
+        @keyframes gentleWobble { 
+            0%, 100% { transform: rotate(0deg); } 
+            25% { transform: rotate(-3deg); } 
+            75% { transform: rotate(3deg); } 
+        }
+        
+        .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
+        .anim-pop { animation: pop 0.4s ease-out forwards; }
+        .anim-gentle { animation: gentleWobble 4s ease-in-out infinite; }
+        .grow-bar { animation: barGrow 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; transform-origin: bottom; }
+
+        .btn-soft { transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); cursor: pointer; }
+        .btn-soft:active { transform: scale(0.96); opacity: 0.8; }
+        .pb-safe { padding-bottom: 96px; } 
+
+        .curved-header { border-radius: 0 0 40px 40px; }
+        .img-gradient::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 65%); }
+        .liked-icon { font-variation-settings: 'FILL' 1; color: #C26A5A !important; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-frame">
+
+    <!-- GLOBAL TOAST NOTIFICATION -->
+    <div id="toast" class="absolute top-8 left-1/2 -translate-x-1/2 bg-text_main text-white px-5 py-3 rounded-full text-xs font-medium z-[100] shadow-2xl transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2 w-max max-w-[90%]">
+        <span class="material-symbols-rounded text-[18px] text-primary_light">info</span>
+        <span id="toast-msg">Notifikasi</span>
+    </div>
+
+    <!-- GLOBAL IMAGE VIEWER (Galeri Zoom) -->
+    <div id="image-viewer" class="absolute inset-0 z-[150] hidden bg-black/95 flex-col justify-center items-center backdrop-blur-sm transition-opacity opacity-0">
+        <button onclick="closeImageViewer()" class="absolute top-6 right-6 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white btn-soft"><span class="material-symbols-rounded text-[28px]">close</span></button>
+        <img id="viewer-img" src="" class="w-full max-h-[80vh] object-contain px-4">
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- FLOW 1: ONBOARDING -->
+    <!-- ======================================================== -->
+    <div id="screen-welcome" class="screen bg-gradient-to-br from-surface to-primary_light/40">
+        <div class="flex flex-col items-center justify-center min-h-full px-6 text-center py-10">
+            <div class="text-7xl mb-6 anim-gentle">🌸</div>
+            <h1 class="font-heading text-3xl font-extrabold text-primary mb-2">Ruang Ibu</h1>
+            <p class="text-text_muted text-sm mb-12 leading-relaxed max-w-[280px]">Ekosistem dukungan inklusif untuk perjalanan hebatmu dan si kecil.</p>
+            <button onclick="nav('screen-role')" class="w-full bg-primary text-white py-4 rounded-full font-semibold text-sm btn-soft shadow-lg flex items-center justify-center gap-2">
+                Mulai Perjalanan <span class="material-symbols-rounded text-[20px]">arrow_forward</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="screen-role" class="screen hidden">
+        <div class="px-5 py-8 min-h-full">
+            <button onclick="nav('screen-welcome')" class="w-10 h-10 flex items-center justify-center bg-white border border-border_color rounded-full text-text_main mb-6 btn-soft shadow-sm"><span class="material-symbols-rounded">arrow_back</span></button>
+            <h2 class="font-heading text-2xl font-bold text-primary mb-1">Masuk Sebagai</h2>
+            <p class="text-text_muted text-xs mb-8">Personalisasikan ekosistem Ruang Ibu untuk Anda.</p>
+            <div class="space-y-4">
+                <button onclick="nav('screen-register-ibu')" class="w-full p-4 border border-border_color rounded-3xl flex items-center gap-4 hover:border-primary transition-colors btn-soft text-left bg-surface shadow-sm">
+                    <div class="w-14 h-14 bg-primary_light/30 rounded-full flex items-center justify-center text-2xl shrink-0">👩‍👧</div>
+                    <div><h3 class="font-bold text-primary text-base">Ibu / Orang Tua</h3><p class="text-xs text-text_muted mt-1">Mencari dukungan & edukasi</p></div>
+                </button>
+                <button onclick="nav('screen-login')" class="w-full p-4 border border-border_color rounded-3xl flex items-center gap-4 hover:border-blue-500 transition-colors btn-soft text-left bg-surface shadow-sm">
+                    <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center text-2xl shrink-0">👨‍⚕️</div>
+                    <div><h3 class="font-bold text-blue-800 text-base">Dokter Spesialis</h3><p class="text-xs text-text_muted mt-1">Kelola jadwal konsultasi</p></div>
+                </button>
+                <button onclick="nav('screen-login')" class="w-full p-4 border border-border_color rounded-3xl flex items-center gap-4 hover:border-green-500 transition-colors btn-soft text-left bg-surface shadow-sm">
+                    <div class="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center text-2xl shrink-0">🧠</div>
+                    <div><h3 class="font-bold text-green-800 text-base">Psikolog / Terapis</h3><p class="text-xs text-text_muted mt-1">Beri layanan terapi</p></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-register-ibu" class="screen hidden overflow-y-auto">
+        <div class="px-5 py-8 min-h-full">
+            <button onclick="nav('screen-role')" class="w-10 h-10 flex items-center justify-center bg-white border border-border_color rounded-full text-text_main mb-6 btn-soft shadow-sm"><span class="material-symbols-rounded">arrow_back</span></button>
+            <h2 class="font-heading text-2xl font-bold text-primary mb-6">Lengkapi Profil Bunda</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-text_muted mb-1.5 uppercase tracking-wider">Nama Bunda</label>
+                    <input type="text" id="reg-name" placeholder="Masukkan nama..." class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm transition-colors">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-text_muted mb-1.5 uppercase tracking-wider">Umur</label>
+                        <input type="number" placeholder="Tahun" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-text_muted mb-1.5 uppercase tracking-wider">Domisili</label>
+                        <input type="text" placeholder="Kota" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+                    </div>
+                </div>
+                <div class="pt-6 border-t border-border_color">
+                    <label class="block text-sm font-bold text-primary mb-3">Data Anak Pertama</label>
+                    <input type="text" placeholder="Nama Anak" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary mb-3 shadow-sm">
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <input type="number" placeholder="Umur" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+                        <select class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+                            <option>Laki-laki</option><option>Perempuan</option>
+                        </select>
+                    </div>
+                    <select class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm text-text_muted">
+                        <option>Pilih Kebutuhan Khusus</option><option>Autisme (ASD)</option><option>ADHD</option><option>Speech Delay</option><option>Down Syndrome</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="saveProfile()" class="w-full mt-10 bg-primary text-white py-4 rounded-full font-bold text-base btn-soft shadow-md">Simpan & Lanjutkan</button>
+            <div class="h-10"></div>
+        </div>
+    </div>
+
+    <div id="screen-login" class="screen hidden overflow-y-auto">
+        <div class="flex flex-col justify-center px-6 min-h-full py-10">
+            <div class="text-center mb-10">
+                <div class="w-20 h-20 bg-primary_light/30 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl anim-gentle">👋</div>
+                <h2 class="font-heading text-2xl font-bold text-primary mb-2">Selamat Datang Kembali</h2>
+                <p class="text-sm text-text_muted">Masuk untuk melanjutkan perjalanan hebatmu.</p>
+            </div>
+            <div class="space-y-4 mb-10">
+                <input type="email" placeholder="Email Address" value="bunda@ruangibu.com" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+                <input type="password" placeholder="Password" value="password123" class="w-full p-4 bg-surface border border-border_color rounded-2xl text-sm outline-none focus:border-primary shadow-sm">
+            </div>
+            <button onclick="nav('screen-mood')" class="w-full bg-cta text-white py-4 rounded-full font-bold text-base btn-soft shadow-lg">Masuk</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 5: MOOD SELECTION HUB -->
+    <div id="screen-mood" class="screen hidden">
+        <div class="px-5 py-8 flex flex-col min-h-full relative">
+            <h2 class="font-heading text-2xl font-bold text-primary mb-2 mt-4">Bagaimana kondisi Bunda saat ini?</h2>
+            <p class="text-sm text-text_muted mb-8">Validasi perasaanmu. Tidak apa-apa untuk tidak baik-baik saja.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-auto z-10">
+                <div onclick="showMoodPopup('Kewalahan', 'Bunda tidak sendirian. Ambil jeda aman, menangislah jika perlu.', 'cara mengatasi burnout ibu anak abk')" class="group bg-surface border border-border_color p-6 rounded-[28px] text-center btn-soft cursor-pointer shadow-sm hover:border-primary hover:shadow-md transition-all">
+                    <!-- Text Emoji Asli (Super Jelas dan Anti Error) -->
+                    <div class="text-[64px] mb-2 anim-gentle drop-shadow-md transform group-hover:scale-110 transition-transform duration-300" style="animation-delay: 0.1s;">🤯</div>
+                    <span class="font-bold text-sm text-text_main">Kewalahan</span>
+                </div>
+                <div onclick="showMoodPopup('Penuh Harap', 'Energi positif Bunda sangat berarti. Yuk pertahankan!', 'afirmasi positif pagi hari')" class="group bg-surface border border-border_color p-6 rounded-[28px] text-center btn-soft cursor-pointer shadow-sm hover:border-primary hover:shadow-md transition-all">
+                    <div class="text-[64px] mb-2 anim-gentle drop-shadow-md transform group-hover:scale-110 transition-transform duration-300" style="animation-delay: 0.5s;">✨</div>
+                    <span class="font-bold text-sm text-text_main">Penuh Harap</span>
+                </div>
+                <div onclick="showMoodPopup('Lelah', 'Istirahat sejenak, Bun. Ambil nafas dalam-dalam, Anda luar biasa.', 'cara mengatasi ibu lelah fisik dan mental')" class="group bg-surface border border-border_color p-6 rounded-[28px] text-center btn-soft cursor-pointer shadow-sm hover:border-primary hover:shadow-md transition-all">
+                    <div class="text-[64px] mb-2 anim-gentle drop-shadow-md transform group-hover:scale-110 transition-transform duration-300" style="animation-delay: 0.2s;">🥱</div>
+                    <span class="font-bold text-sm text-text_main">Lelah</span>
+                </div>
+                <div onclick="showMoodPopup('Semangat', 'Luar biasa Bun! Mari salurkan aura positif ini dalam aktivitas ceria.', 'aktivitas sensori anak seru')" class="group bg-surface border border-border_color p-6 rounded-[28px] text-center btn-soft cursor-pointer shadow-sm hover:border-primary hover:shadow-md transition-all">
+                    <div class="text-[64px] mb-2 anim-gentle drop-shadow-md transform group-hover:scale-110 transition-transform duration-300" style="animation-delay: 0.6s;">🔥</div>
+                    <span class="font-bold text-sm text-text_main">Semangat</span>
+                </div>
+            </div>
+
+            <!-- Absolute Overlay Popup internal -->
+            <div id="mood-popup" class="absolute inset-0 bg-black/60 z-[90] hidden flex-col justify-end">
+                <div class="bg-white rounded-t-[32px] p-6 animate-slide-up w-full">
+                    <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                    <h3 class="font-heading text-xl font-bold text-primary mb-2" id="mood-title">Perasaanmu Valid</h3>
+                    <p class="text-xs text-text_muted mb-6 leading-relaxed" id="mood-desc">Pesan afirmasi.</p>
+                    
+                    <div class="bg-bg_app border border-border_color rounded-2xl p-4 mb-6 flex items-center gap-4 cursor-pointer btn-soft shadow-sm" onclick="openYT(currentMoodQuery)">
+                        <div class="w-12 h-12 bg-cta rounded-xl flex items-center justify-center shrink-0 shadow-md"><span class="material-symbols-rounded text-white text-[24px]">play_arrow</span></div>
+                        <div class="flex-1 pr-1">
+                            <p class="text-[9px] text-cta font-bold uppercase tracking-wide mb-0.5">Rekomendasi Konten Relaksasi</p>
+                            <p class="text-xs font-bold text-text_main leading-snug line-clamp-2" id="mood-vid-title">Judul Video</p>
+                        </div>
+                    </div>
+                    <button onclick="nav('screen-affirmation')" class="w-full bg-primary text-white py-4 rounded-full font-bold text-sm btn-soft shadow-sm">Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-affirmation" class="screen hidden bg-primary">
+        <div class="flex flex-col justify-center px-6 text-center min-h-full py-10">
+            <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm anim-gentle">
+                <span class="material-symbols-rounded text-white text-5xl">favorite</span>
+            </div>
+            <h2 class="font-heading text-2xl font-bold mb-4 leading-relaxed text-white">"Setiap langkah kecil si kecil adalah kemenangan yang patut dirayakan bersama."</h2>
+            <p class="text-sm opacity-80 mb-12 text-white">Kami siap menemani perjalanan hebat Bunda hari ini.</p>
+            <button onclick="enterMainApp()" class="w-full bg-white text-primary py-4 rounded-full font-bold text-base btn-soft shadow-xl">Let's Get Started</button>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- FLOW 2: MAIN APP (DASHBOARD & TABS)                      -->
+    <!-- ======================================================== -->
+    
+    <div id="screen-mainapp" class="screen hidden flex-col overflow-hidden">
+        
+        <!-- HEADER STATIC -->
+        <header class="shrink-0 bg-surface/95 backdrop-blur-md px-5 py-4 z-40 border-b border-border_color flex items-center justify-between relative">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary_light rounded-full flex items-center justify-center font-bold text-primary text-base" id="hdr-avatar">I</div>
+                <div>
+                    <p class="text-[10px] text-text_muted font-bold uppercase tracking-wider mb-0.5">Selamat Datang</p>
+                    <h2 class="font-heading font-bold text-primary text-sm flex items-center gap-1 cursor-pointer">
+                        Bunda <span id="hdr-name">Ika</span> <span class="material-symbols-rounded text-[16px]">expand_more</span>
+                    </h2>
+                </div>
+            </div>
+            <button class="relative p-2 rounded-full hover:bg-bg_app btn-soft" onclick="showToast('Notifikasi: Cek rapor progres anak Anda.')">
+                <span class="material-symbols-rounded text-text_muted text-[24px]">notifications</span>
+                <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-cta rounded-full border-2 border-white"></span>
+            </button>
+        </header>
+
+        <!-- CONTAINER TABS (Scrollable Area) -->
+        <div id="tabs-container" class="flex-1 overflow-y-auto relative pb-safe">
+            
+            <!-- ================= HOME TAB ================= -->
+            <div id="tab-home" class="tab-content active px-5 py-5 space-y-6">
+                <div id="home-reminder-wrapper" class="hidden mb-2">
+                    <h3 class="font-bold text-base text-primary mb-3">Jadwal Mendatang</h3>
+                    <div id="home-jadwal-container" class="space-y-3"></div>
+                </div>
+
+                <div class="bg-gradient-to-r from-primary_light/40 to-surface border border-border_color rounded-2xl p-4 flex items-center gap-3">
+                    <span class="text-3xl">🌱</span>
+                    <p class="text-xs font-medium text-text_main italic leading-relaxed">"Progres 1% setiap hari adalah pencapaian luar biasa. Semangat, Bun!"</p>
+                </div>
+
+                <!-- Motivasi Harian -->
+                <div class="bg-surface border border-border_color rounded-3xl p-5 shadow-sm space-y-2 relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-primary_light/20 text-[100px] pointer-events-none"><span class="material-symbols-rounded" style="font-size: 100px;">format_quote</span></div>
+                    <h4 class="font-heading font-bold text-sm text-primary flex items-center gap-1.5"><span class="material-symbols-rounded text-[18px]">auto_awesome</span> Motivasi Hari Ini</h4>
+                    <p class="text-xs text-text_main leading-relaxed relative z-10">"Bunda, kesabaranmu dalam melatih kontak mata dan sensori si kecil hari ini adalah pondasi kokoh masa depannya. Kamu hebat!"</p>
+                </div>
+
+                <!-- Modul Terkini -->
+                <div>
+                    <h3 class="font-bold text-sm text-primary mb-3">Tontonan Hari Ini</h3>
+                    <div onclick="openSubPage('page-edu-detail')" class="bg-surface rounded-2xl border border-border_color overflow-hidden shadow-sm btn-soft cursor-pointer flex gap-3 p-3">
+                        <div class="w-24 h-16 bg-gray-200 rounded-xl relative shrink-0 overflow-hidden shadow-inner">
+                            <img src="https://images.unsplash.com/photo-1615486511484-92e172cb4fec?w=200&q=80" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/10 flex items-center justify-center"><span class="material-symbols-rounded text-white text-xl">play_circle</span></div>
+                        </div>
+                        <div class="flex-1 min-w-0 flex flex-col justify-center">
+                            <h4 class="font-bold text-xs text-text_main truncate">Mengatasi GTM Akibat Sensori</h4>
+                            <p class="text-[10px] text-text_muted mt-1">Edukasi Terpopuler • 15 Menit</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-base text-primary">Progress Anak</h3>
+                        <button onclick="switchTab('tab-edu')" class="text-xs font-bold text-cta flex items-center gap-0.5 btn-soft">Detail <span class="material-symbols-rounded text-[16px]">chevron_right</span></button>
+                    </div>
+                    <div class="bg-surface rounded-3xl p-5 shadow-sm border border-border_color">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-semibold text-text_main">Modul: Nutrisi (GTM)</span>
+                            <span class="font-bold text-cta text-sm">70%</span>
+                        </div>
+                        <div class="w-full bg-bg_app rounded-full h-2 mb-3 overflow-hidden"><div class="bg-cta h-full rounded-full w-[70%]"></div></div>
+                        <p class="text-xs text-text_muted">Tersisa 2 tugas untuk diselesaikan hari ini.</p>
+                    </div>
+                </div>
+
+                <!-- Explore di Home -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-sm text-primary">Tempat Inklusi Terdekat</h3>
+                        <button onclick="switchTab('tab-explore')" class="text-xs font-bold text-cta btn-soft">Lihat Semua</button>
+                    </div>
+                    <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2" id="home-explore-list"></div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-base text-primary mb-3">Layanan Lainnya</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="switchTab('tab-consult')" class="bg-surface rounded-3xl p-5 shadow-sm border border-border_color flex flex-col items-center gap-3 btn-soft text-center">
+                            <span class="material-symbols-rounded text-med_blue text-3xl">stethoscope</span>
+                            <span class="text-xs font-bold text-text_main">Konsultasi Ahli</span>
+                        </div>
+                        <div onclick="switchTab('tab-community')" class="bg-surface rounded-3xl p-5 shadow-sm border border-border_color flex flex-col items-center gap-3 btn-soft text-center">
+                            <span class="material-symbols-rounded text-cta text-3xl">forum</span>
+                            <span class="text-xs font-bold text-text_main">Ruang Curhat Bunda</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= COMMUNITY TAB ================= -->
+            <div id="tab-community" class="tab-content hidden px-5 py-4 relative">
+                <div class="sticky top-0 bg-bg_app/95 backdrop-blur-md z-10 pb-4 pt-1 -mx-5 px-5 space-y-4">
+                    <div class="relative">
+                        <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-text_muted text-[20px]">search</span>
+                        <input type="text" placeholder="Cari cerita bunda lain atau berita..." class="w-full bg-surface border border-border_color rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-primary shadow-sm">
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar" id="community-filters">
+                        <button onclick="setCommunityFilter('All', this)" class="filter-btn px-5 py-2 rounded-full bg-primary text-white font-bold text-xs shrink-0 shadow-sm transition-colors">All</button>
+                        <button onclick="setCommunityFilter('Trending', this)" class="filter-btn px-5 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-xs shrink-0 transition-colors">Trending Topics</button>
+                    </div>
+                </div>
+                <div class="space-y-4 pb-20" id="feed-container"></div>
+            </div>
+
+            <!-- ================= EDUKASI TAB ================= -->
+            <div id="tab-edu" class="tab-content hidden pb-10">
+                <div class="px-5 pt-5 pb-2">
+                    <div class="relative">
+                        <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-text_muted text-[20px]">search</span>
+                        <input type="text" placeholder="Search courses (e.g., Speech Delay)..." class="w-full bg-surface border border-border_color rounded-xl py-3 pl-12 pr-4 text-sm outline-none focus:border-primary shadow-sm">
+                    </div>
+                </div>
+
+                <div class="pl-5 py-4">
+                    <div class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pr-5">
+                        <div onclick="openReport()" class="min-w-[280px] bg-primary text-white rounded-[24px] p-5 snap-center shadow-lg cursor-pointer btn-soft relative overflow-hidden">
+                            <div class="absolute -right-4 -bottom-4 opacity-20"><span class="material-symbols-rounded text-[100px]">monitoring</span></div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2 opacity-80">Data Analytics</p>
+                            <h3 class="font-heading text-lg font-bold mb-1">Progress Report Anak</h3>
+                            <p class="text-xs opacity-90 mb-5">Analisis AI performa belajar & terapi bulanan.</p>
+                            <button class="bg-white text-primary px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm">Lihat Hasil Grafik <span class="material-symbols-rounded text-[16px]">arrow_forward</span></button>
+                        </div>
+                        <div class="min-w-[280px] bg-cta text-white rounded-[24px] p-5 snap-center shadow-lg relative overflow-hidden">
+                            <div class="absolute -right-4 -bottom-4 opacity-20"><span class="material-symbols-rounded text-[100px]">lightbulb</span></div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2 opacity-80">Daily Tips</p>
+                            <h3 class="font-heading text-lg font-bold mb-1">Pentingnya Rutinitas</h3>
+                            <p class="text-xs opacity-90 mb-5">Anak dengan ASD lebih tenang dengan jadwal visual.</p>
+                            <button class="bg-white text-cta px-4 py-2 rounded-xl text-xs font-bold shadow-sm" onclick="showToast('Menyimpan Tips...')">Simpan Tips</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-5 mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-heading text-lg font-bold text-text_main">My Course</h3>
+                        <button class="text-xs font-bold text-cta btn-soft" onclick="showToast('Menampilkan semua kelas terdaftar...')">See all</button>
+                    </div>
+                    <div onclick="openSubPage('page-edu-detail')" class="bg-surface border border-border_color rounded-3xl p-4 shadow-sm flex gap-4 btn-soft cursor-pointer">
+                        <div class="w-20 h-20 bg-primary_light rounded-2xl shrink-0 overflow-hidden relative flex items-center justify-center">
+                            <img src="https://images.unsplash.com/photo-1615486511484-92e172cb4fec?w=200&q=80" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/20 flex items-center justify-center"><span class="material-symbols-rounded text-white text-[28px]">play_arrow</span></div>
+                        </div>
+                        <div class="flex-1 py-1">
+                            <h4 class="font-bold text-sm text-primary mb-1 line-clamp-1">Atasi Anak GTM Parah</h4>
+                            <div class="flex items-center gap-3 mb-2 mt-2">
+                                <div class="flex-1 bg-bg_app h-2 rounded-full overflow-hidden border border-border_color">
+                                    <div class="bg-cta w-[60%] h-full rounded-full grow-bar"></div>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-text_muted font-medium">60% selesai • 2 lessons left</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-heading text-lg font-bold text-text_main">All Course</h3>
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar mb-5" id="edu-filters">
+                        <button onclick="filterEdu('Semua', this)" class="edu-filter-btn px-4 py-2 rounded-full bg-primary text-white font-bold text-[11px] shrink-0 shadow-sm transition-colors">Semua</button>
+                        <button onclick="filterEdu('Nutrisi', this)" class="edu-filter-btn px-4 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-[11px] shrink-0 transition-colors">Nutrisi</button>
+                        <button onclick="filterEdu('Tumbuh Kembang', this)" class="edu-filter-btn px-4 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-[11px] shrink-0 transition-colors">Tumbuh Kembang</button>
+                        <button onclick="filterEdu('Terapi Wicara', this)" class="edu-filter-btn px-4 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-[11px] shrink-0 transition-colors">Terapi Wicara</button>
+                        <button onclick="filterEdu('Sensori & Motorik', this)" class="edu-filter-btn px-4 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-[11px] shrink-0 transition-colors">Sensori</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4" id="edu-grid"></div>
+                </div>
+            </div>
+
+            <!-- ================= KONSULTASI TAB ================= -->
+            <div id="tab-consult" class="tab-content hidden px-5 py-5 space-y-6">
+                <div class="flex gap-3 mb-2">
+                    <div class="relative flex-1">
+                        <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-text_muted text-[20px]">search</span>
+                        <input type="text" placeholder="Search doctor, symptoms..." class="w-full bg-surface border border-border_color rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-primary shadow-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-sm text-text_main mb-3">Categories</h3>
+                    <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+                        <div class="flex flex-col items-center gap-2 min-w-[70px] cursor-pointer btn-soft" onclick="openExpertList('Dokter Anak')">
+                            <div class="w-14 h-14 rounded-full bg-primary_light/30 text-primary flex items-center justify-center text-3xl shadow-sm"><span class="material-symbols-rounded text-[28px]">stethoscope</span></div>
+                            <span class="text-[10px] font-bold text-text_main text-center">Dokter Anak</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 min-w-[70px] cursor-pointer btn-soft" onclick="openExpertList('Psikolog Klinis')">
+                            <div class="w-14 h-14 rounded-full bg-primary_light/30 text-primary flex items-center justify-center text-3xl shadow-sm"><span class="material-symbols-rounded text-[28px]">psychology</span></div>
+                            <span class="text-[10px] font-bold text-text_main text-center">Psikolog</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 min-w-[70px] cursor-pointer btn-soft" onclick="openExpertList('Terapis Wicara')">
+                            <div class="w-14 h-14 rounded-full bg-primary_light/30 text-primary flex items-center justify-center text-3xl shadow-sm"><span class="material-symbols-rounded text-[28px]">record_voice_over</span></div>
+                            <span class="text-[10px] font-bold text-text_main text-center">T. Wicara</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 min-w-[70px] cursor-pointer btn-soft" onclick="openExpertList('Terapis Okupasi')">
+                            <div class="w-14 h-14 rounded-full bg-primary_light/30 text-primary flex items-center justify-center text-3xl shadow-sm"><span class="material-symbols-rounded text-[28px]">accessibility_new</span></div>
+                            <span class="text-[10px] font-bold text-text_main text-center">T. Okupasi</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 min-w-[70px] cursor-pointer btn-soft" onclick="openSubPage('page-history')">
+                            <div class="w-14 h-14 rounded-full bg-primary_light/30 text-primary flex items-center justify-center text-3xl shadow-sm"><span class="material-symbols-rounded text-[28px]">history</span></div>
+                            <span class="text-[10px] font-bold text-text_main text-center">History</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-sm text-text_main mb-3">Butuh Bantuan Apa Hari Ini?</h3>
+                    <div class="space-y-3">
+                        <div class="bg-surface rounded-3xl p-4 shadow-sm border border-border_color flex gap-4 items-center">
+                             <div class="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-3xl shrink-0">🍽️</div>
+                             <div class="flex-1">
+                                 <h4 class="font-bold text-sm text-text_main">Anak GTM Parah</h4>
+                                 <p class="text-[10px] text-text_muted">Menolak makan, berat badan seret.</p>
+                             </div>
+                             <button onclick="openChat('Dokter Ahli Gizi')" class="bg-primary_light/30 text-primary px-3 py-1.5 rounded-xl text-[10px] font-bold btn-soft">Tanya Ahli</button>
+                        </div>
+                        <div class="bg-surface rounded-3xl p-4 shadow-sm border border-border_color flex gap-4 items-center">
+                             <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl shrink-0">🗣️</div>
+                             <div class="flex-1">
+                                 <h4 class="font-bold text-sm text-text_main">Terlambat Bicara</h4>
+                                 <p class="text-[10px] text-text_muted">Belum ada kata bermakna di usia 2th.</p>
+                             </div>
+                             <button onclick="openChat('Terapis Wicara')" class="bg-primary_light/30 text-primary px-3 py-1.5 rounded-xl text-[10px] font-bold btn-soft">Tanya Ahli</button>
+                        </div>
+                        <div class="bg-surface rounded-3xl p-4 shadow-sm border border-border_color flex gap-4 items-center">
+                             <div class="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-3xl shrink-0">🤯</div>
+                             <div class="flex-1">
+                                 <h4 class="font-bold text-sm text-text_main">Sering Tantrum</h4>
+                                 <p class="text-[10px] text-text_muted">Emosi meledak, sulit ditenangkan.</p>
+                             </div>
+                             <button onclick="openChat('Psikolog Klinis')" class="bg-primary_light/30 text-primary px-3 py-1.5 rounded-xl text-[10px] font-bold btn-soft">Tanya Ahli</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= EXPLORE TAB ================= -->
+            <div id="tab-explore" class="tab-content hidden px-0 py-0 space-y-0 relative">
+                <div class="bg-surface px-5 pt-5 pb-3 shadow-sm border-b border-border_color mb-2">
+                    <div class="flex items-center justify-between mb-4 bg-bg_app p-3 rounded-full border border-border_color">
+                        <div class="flex items-center gap-2 w-full">
+                            <span class="material-symbols-rounded text-primary text-[20px]">location_on</span>
+                            <select class="bg-transparent text-sm font-bold text-text_main outline-none appearance-none flex-1">
+                                <option>Semua Kota (Indonesia)</option>
+                                <option>Bandung, Jawa Barat</option>
+                                <option>Jakarta Selatan</option>
+                                <option>Surabaya, Jawa Timur</option>
+                            </select>
+                            <span class="material-symbols-rounded text-text_muted text-[18px]">keyboard_arrow_down</span>
+                        </div>
+                    </div>
+                    <div class="relative mb-4">
+                        <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-text_muted text-[20px]">search</span>
+                        <input type="text" placeholder="Cari rumah sakit, sekolah, terapi..." class="w-full bg-surface border border-border_color rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-primary shadow-sm">
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2" id="explore-filters">
+                        <button onclick="filterExplore('Semua', this)" class="explore-btn px-4 py-2 rounded-full bg-primary text-white font-bold text-xs shrink-0 shadow-sm transition-colors">Semua</button>
+                        <button onclick="filterExplore('Rumah Sakit', this)" class="explore-btn px-4 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-xs shrink-0 transition-colors">Rumah Sakit</button>
+                        <button onclick="filterExplore('Sekolah', this)" class="explore-btn px-4 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-xs shrink-0 transition-colors">Sekolah Inklusi</button>
+                        <button onclick="filterExplore('Tempat Terapi', this)" class="explore-btn px-4 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-xs shrink-0 transition-colors">Pusat Terapi</button>
+                        <button onclick="filterExplore('Playground', this)" class="explore-btn px-4 py-2 rounded-full bg-surface border border-border_color text-text_muted font-bold text-xs shrink-0 transition-colors">Playground ABK</button>
+                    </div>
+                </div>
+
+                <div class="px-5 py-3 space-y-6">
+                    <div>
+                        <h3 class="font-heading text-lg font-bold text-text_main mb-4">Discover Terbaik</h3>
+                        <div class="flex gap-4 overflow-x-auto hide-scrollbar snap-x pr-5" id="explore-horizontal-list"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-heading text-lg font-bold text-text_main">Tempat Terdekat</h3>
+                        </div>
+                        <div class="space-y-4" id="explore-vertical-list"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- END TAB CONTAINER -->
+
+        <!-- BOTTOM NAVIGATION GLOBAL -->
+        <nav class="shrink-0 w-full bg-surface/95 backdrop-blur-md border-t border-border_color px-2 py-3 flex justify-around items-center z-40 pb-[calc(16px+env(safe-area-inset-bottom))] shadow-[0_-5px_20px_rgba(0,0,0,0.03)] relative">
+            <button onclick="switchTab('tab-home')" id="nav-tab-home" class="nav-item flex flex-col items-center gap-1 w-[20%] text-cta transition-colors">
+                <span class="material-symbols-rounded text-[26px]" style="font-variation-settings: 'FILL' 1">home</span>
+                <span class="text-[10px] font-bold">Home</span>
+            </button>
+            <button onclick="switchTab('tab-community')" id="nav-tab-community" class="nav-item flex flex-col items-center gap-1 w-[20%] text-text_muted transition-colors">
+                <span class="material-symbols-rounded text-[26px]">forum</span>
+                <span class="text-[10px] font-bold">Ruang</span>
+            </button>
+            <button onclick="switchTab('tab-edu')" id="nav-tab-edu" class="nav-item flex flex-col items-center gap-1 w-[20%] text-text_muted transition-colors">
+                <span class="material-symbols-rounded text-[26px]">menu_book</span>
+                <span class="text-[10px] font-bold">Edukasi</span>
+            </button>
+            <button onclick="switchTab('tab-consult')" id="nav-tab-consult" class="nav-item flex flex-col items-center gap-1 w-[20%] text-text_muted transition-colors">
+                <span class="material-symbols-rounded text-[26px]">medical_services</span>
+                <span class="text-[10px] font-bold">Konsul</span>
+            </button>
+            <button onclick="switchTab('tab-explore')" id="nav-tab-explore" class="nav-item flex flex-col items-center gap-1 w-[20%] text-text_muted transition-colors">
+                <span class="material-symbols-rounded text-[26px]">explore</span>
+                <span class="text-[10px] font-bold">Explore</span>
+            </button>
+        </nav>
+
+        <!-- FLOATING BUTTON COMMUNITY -->
+        <button id="fab-post" onclick="openCreatePostModal()" class="absolute bottom-[100px] right-6 w-14 h-14 bg-cta text-white rounded-full shadow-[0_4px_20px_rgba(194,106,90,0.5)] flex items-center justify-center btn-soft z-50 hidden">
+            <span class="material-symbols-rounded text-[24px]">edit</span>
+        </button>
+
+        <!-- ======================================================== -->
+        <!-- SYSTEM OVERLAYS (TULIS CERITA, COMMENT, BOOKMARK MODAL)  -->
+        <!-- ======================================================== -->
+        <div id="modal-create-post" class="absolute inset-0 bg-black/60 z-[70] hidden flex-col justify-end">
+            <div class="bg-white rounded-t-[32px] p-6 animate-slide-up w-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-heading text-lg font-bold text-primary">Tulis Cerita Bunda</h3>
+                    <button onclick="closeCreatePostModal()" class="w-8 h-8 flex items-center justify-center bg-bg_app rounded-full text-text_muted btn-soft"><span class="material-symbols-rounded text-[20px]">close</span></button>
+                </div>
+                <textarea id="input-post-text" rows="5" class="w-full bg-surface border border-border_color rounded-2xl p-4 text-sm outline-none focus:border-primary shadow-inner resize-none mb-6" placeholder="Bagikan ceritamu hari ini, Bun..."></textarea>
+                <button onclick="submitNewPost()" class="w-full bg-primary text-white py-4 rounded-full font-bold text-sm btn-soft shadow-md">Posting Cerita</button>
+            </div>
+        </div>
+
+        <div id="modal-reply" class="absolute inset-0 bg-black/60 z-[70] hidden flex-col justify-end">
+            <div class="bg-white rounded-t-[32px] p-6 animate-slide-up w-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-heading text-lg font-bold text-primary">Balas Cerita</h3>
+                    <button onclick="closeReplyModal()" class="w-8 h-8 flex items-center justify-center bg-bg_app rounded-full text-text_muted btn-soft"><span class="material-symbols-rounded text-[20px]">close</span></button>
+                </div>
+                <textarea id="input-reply-text" rows="3" class="w-full bg-surface border border-border_color rounded-2xl p-4 text-sm outline-none focus:border-primary shadow-inner resize-none mb-6" placeholder="Tulis komentar/balasan Bunda..."></textarea>
+                <button onclick="submitReply()" class="w-full bg-cta text-white py-4 rounded-full font-bold text-sm btn-soft shadow-md">Kirim Balasan</button>
+            </div>
+        </div>
+
+        <div id="modal-bookmark-success" class="absolute inset-0 bg-black/60 z-[80] hidden flex-col justify-end">
+            <div class="bg-white rounded-t-[32px] p-8 animate-slide-up text-center relative w-full pb-safe">
+                <div class="w-16 h-16 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-rounded text-3xl" style="font-variation-settings: 'FILL' 1">bookmark</span>
+                </div>
+                <h3 class="font-heading text-xl font-bold text-text_main mb-2">Tersimpan!</h3>
+                <p class="text-sm text-text_muted mb-8">Destinasi ini sudah berhasil ditambahkan ke daftar simpanan Bunda.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeBookmarkModal()" class="flex-1 bg-surface border border-border_color text-text_muted py-3.5 rounded-full font-bold text-sm btn-soft">Tutup</button>
+                    <button onclick="closeBookmarkModal(); closeSubPage('page-explore-detail'); switchTab('tab-explore');" class="flex-1 bg-primary text-white py-3.5 rounded-full font-bold text-sm btn-soft">Explore Lainnya</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- SUB-PAGES WORKSPACE                                      -->
+        <!-- ======================================================== -->
+
+        <!-- 0. SUB-PAGE: CHAT ONLINE HALODOC STYLE -->
+        <div id="page-chat" class="sub-page hidden flex-col bg-surface overflow-hidden">
+            <div class="sticky top-0 bg-surface/95 backdrop-blur-md z-30 px-4 py-4 flex items-center gap-3 border-b border-border_color shadow-sm">
+                <button onclick="closeSubPage('page-chat')" class="w-10 h-10 flex items-center justify-center bg-bg_app rounded-full text-text_main btn-soft"><span class="material-symbols-rounded">arrow_back</span></button>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary_light/50 rounded-full flex items-center justify-center text-xl">🩺</div>
+                    <div>
+                        <h2 class="font-bold text-sm text-text_main" id="chat-title">Konsultasi Ahli</h2>
+                        <p class="text-[10px] text-green-600 font-bold flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Online</p>
+                    </div>
+                </div>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-4 bg-bg_app pb-32">
+                <div class="flex justify-center mb-4"><span class="text-[10px] bg-border_color/50 px-3 py-1 rounded-full text-text_muted">Chat dienkripsi End-to-End</span></div>
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 bg-primary_light/50 rounded-full flex items-center justify-center text-sm shrink-0">🩺</div>
+                    <div class="bg-white border border-border_color p-3 rounded-2xl rounded-tl-none max-w-[80%] shadow-sm">
+                        <p class="text-xs text-text_main leading-relaxed">Halo Bunda, saya Ahli dari Ruang Ibu. Ada keluhan apa yang bisa saya bantu hari ini?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-0 w-full bg-surface border-t border-border_color px-4 py-3 flex gap-2 z-50 shadow-[0_-5px_10px_rgba(0,0,0,0.02)] pb-[calc(12px+env(safe-area-inset-bottom))]">
+                <input type="text" id="chat-input" placeholder="Ketik keluhan Bunda..." class="flex-1 bg-bg_app border border-border_color rounded-full px-4 text-xs outline-none focus:border-primary shadow-inner">
+                <button onclick="sendChat()" class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center btn-soft shadow-md shrink-0"><span class="material-symbols-rounded text-[20px]">send</span></button>
+            </div>
+        </div>
+
+        <!-- 1. SUB-PAGE: LIST DOCTOR -->
+        <div id="page-list-expert" class="sub-page hidden">
+            <div class="bg-primary text-white curved-header pb-6 pt-5 px-5 shadow-sm sticky top-0 z-30">
+                <div class="flex items-center gap-3 mb-5">
+                    <button onclick="closeSubPage('page-list-expert')" class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full text-white btn-soft"><span class="material-symbols-rounded">arrow_back</span></button>
+                    <h2 class="font-bold text-lg" id="expert-list-title">All Doctors</h2>
+                </div>
+                <div class="relative">
+                    <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-white/70 text-[20px]">search</span>
+                    <input type="text" placeholder="Search..." class="w-full bg-white/20 border border-white/30 text-white placeholder-white/70 rounded-full py-2.5 pl-12 pr-4 text-sm outline-none focus:bg-white/30 transition-colors">
+                </div>
+            </div>
+            <div class="p-5 space-y-4 -mt-2" id="expert-list-container"></div>
+            <div class="pb-10"></div>
+        </div>
+
+        <!-- 2. SUB-PAGE: EXPERT DETAIL -->
+        <div id="page-expert-detail" class="sub-page hidden flex-col overflow-hidden bg-surface">
+            <div class="flex-1 overflow-y-auto pb-10 relative">
+                <div class="bg-primary curved-header h-40 relative px-5 pt-5 flex justify-between items-start z-10">
+                    <button onclick="closeSubPage('page-expert-detail')" class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full text-white btn-soft backdrop-blur-sm"><span class="material-symbols-rounded">arrow_back</span></button>
+                </div>
+                <div class="relative px-5 pb-6 -mt-16 z-20 flex flex-col items-center">
+                    <div class="w-32 h-32 rounded-3xl bg-gray-200 border-4 border-surface overflow-hidden shadow-lg mb-3">
+                        <img id="detail-img" src="" class="w-full h-full object-cover">
+                    </div>
+                    <h2 class="font-heading text-xl font-bold text-text_main mb-1" id="detail-name">-</h2>
+                    <p class="text-xs text-text_muted mb-5" id="detail-role">-</p>
+                    <div class="w-full grid grid-cols-3 divide-x divide-border_color bg-surface border border-border_color rounded-3xl py-4 shadow-sm mb-6">
+                        <div class="text-center">
+                            <p class="font-bold text-primary text-lg" id="detail-patients">-</p>
+                            <p class="text-[10px] text-text_muted">Patients</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-bold text-primary text-lg" id="detail-exp">-</p>
+                            <p class="text-[10px] text-text_muted">Exp. years</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-bold text-primary text-lg flex items-center justify-center gap-0.5" id="detail-rating">-</p>
+                            <p class="text-[10px] text-text_muted" id="detail-reviews">-</p>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full text-left mb-5">
+                        <h3 class="font-bold text-sm text-text_main mb-3">Schedule</h3>
+                        <div class="grid grid-cols-4 gap-3 mb-2">
+                            <div class="date-btn bg-primary text-white py-3 rounded-2xl text-center shadow-md cursor-pointer btn-soft" onclick="selectDate(this, '24 Mei')"><p class="text-[10px] mb-1 opacity-90">24</p><p class="font-bold text-sm">Mei</p></div>
+                            <div class="date-btn bg-surface border border-border_color text-text_muted py-3 rounded-2xl text-center shadow-sm cursor-pointer btn-soft" onclick="selectDate(this, '25 Mei')"><p class="text-[10px] mb-1">25</p><p class="font-bold text-sm">Mei</p></div>
+                            <div class="date-btn bg-surface border border-border_color text-text_muted py-3 rounded-2xl text-center shadow-sm cursor-pointer btn-soft" onclick="selectDate(this, '26 Mei')"><p class="text-[10px] mb-1">26</p><p class="font-bold text-sm">Mei</p></div>
+                            <div class="date-btn bg-surface border border-border_color text-text_muted py-3 rounded-2xl text-center shadow-sm cursor-pointer btn-soft" onclick="selectDate(this, '27 Mei')"><p class="text-[10px] mb-1">27</p><p class="font-bold text-sm">Mei</p></div>
+                        </div>
+                    </div>
+                    <div class="w-full text-left mb-8">
+                        <h3 class="font-bold text-sm text-text_main mb-3">Time</h3>
+                        <div class="grid grid-cols-4 gap-3">
+                            <div class="time-btn bg-primary text-white py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs shadow-sm" onclick="selectTime(this, '09:00')">09:00</div>
+                            <div class="time-btn bg-primary_light/30 text-primary py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs" onclick="selectTime(this, '10:00')">10:00</div>
+                            <div class="time-btn bg-primary_light/30 text-primary py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs" onclick="selectTime(this, '11:30')">11:30</div>
+                            <div class="time-btn bg-primary_light/30 text-primary py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs" onclick="selectTime(this, '13:00')">13:00</div>
+                            <div class="time-btn bg-primary_light/30 text-primary py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs" onclick="selectTime(this, '14:30')">14:30</div>
+                            <div class="time-btn bg-primary_light/30 text-primary py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs" onclick="selectTime(this, '15:00')">15:00</div>
+                            <div class="time-btn bg-primary_light/30 text-primary py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs" onclick="selectTime(this, '16:00')">16:00</div>
+                            <div class="time-btn bg-primary_light/30 text-primary py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs opacity-50">17:00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="shrink-0 bg-surface border-t border-border_color px-5 py-4 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] pb-[calc(16px+env(safe-area-inset-bottom))]">
+                <button onclick="goToPayment()" class="w-full bg-cta text-white py-4 rounded-full font-bold text-base btn-soft shadow-[0_8px_20px_rgba(194,106,90,0.4)]">Book Appointment</button>
+            </div>
+        </div>
+
+        <!-- 3. SUB-PAGE: PAYMENT -->
+        <div id="page-payment" class="sub-page hidden flex-col overflow-hidden bg-surface">
+            <div class="sticky top-0 bg-surface/95 backdrop-blur-md z-30 px-4 py-4 flex items-center gap-3 border-b border-border_color">
+                <button onclick="closeSubPage('page-payment')" class="w-10 h-10 flex items-center justify-center bg-bg_app rounded-full text-text_main btn-soft"><span class="material-symbols-rounded">arrow_back</span></button>
+                <h2 class="font-bold text-base text-text_main">Pembayaran</h2>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5">
+                <div class="bg-bg_app border border-border_color rounded-3xl p-5 mb-6">
+                    <h3 class="font-bold text-sm mb-4 border-b border-border_color pb-2">Ringkasan Konsultasi</h3>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs text-text_muted">Dokter</span>
+                        <span class="text-xs font-bold text-text_main" id="pay-doc-name">-</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs text-text_muted">Jadwal</span>
+                        <span class="text-xs font-bold text-text_main" id="pay-schedule">-</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-4 border-t border-border_color pt-4">
+                        <span class="text-sm font-bold text-text_main">Total Bayar</span>
+                        <span class="text-lg font-bold text-cta" id="pay-total">Rp 150.000</span>
+                    </div>
+                </div>
+
+                <h3 class="font-bold text-sm mb-3">Metode Pembayaran</h3>
+                <div class="space-y-3 mb-10">
+                    <label class="flex items-center justify-between bg-surface border border-primary rounded-2xl p-4 cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">B</div>
+                            <span class="text-sm font-bold">BCA Virtual Account</span>
+                        </div>
+                        <input type="radio" name="payment" checked class="w-5 h-5 accent-primary">
+                    </label>
+                    <label class="flex items-center justify-between bg-surface border border-border_color rounded-2xl p-4 cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold">G</div>
+                            <span class="text-sm font-bold">GoPay</span>
+                        </div>
+                        <input type="radio" name="payment" class="w-5 h-5 accent-primary">
+                    </label>
+                </div>
+            </div>
+            <div class="shrink-0 bg-surface border-t border-border_color px-5 py-4 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] pb-[calc(16px+env(safe-area-inset-bottom))]">
+                <button onclick="processPayment()" class="w-full bg-cta text-white py-4 rounded-full font-bold text-base btn-soft shadow-lg">Bayar Sekarang</button>
+            </div>
+        </div>
+
+        <!-- 4. SUB-PAGE: BOOKING SUCCESS -->
+        <div id="page-booking-success" class="sub-page hidden bg-primary text-white z-[80] overflow-y-auto">
+            <div class="min-h-full flex flex-col justify-center px-6 py-10 text-center pb-safe">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                    <span class="material-symbols-rounded text-primary text-5xl">check_circle</span>
+                </div>
+                <h2 class="font-heading text-2xl font-bold mb-2">Consultation Confirmed!</h2>
+                <p class="text-sm opacity-90 mb-10">Tunjukkan antrean ini saat kedatangan di klinik.</p>
+                
+                <div class="bg-white p-8 rounded-[32px] text-text_main w-full shadow-2xl mb-10 relative overflow-hidden">
+                    <div class="absolute -top-4 -left-4 w-8 h-8 bg-primary rounded-full"></div>
+                    <div class="absolute -top-4 -right-4 w-8 h-8 bg-primary rounded-full"></div>
+                    
+                    <p class="text-[10px] font-bold text-text_muted uppercase tracking-widest mb-1">No. Antrean</p>
+                    <p class="text-6xl font-heading font-black text-primary mb-8">A-12</p>
+
+                    <div class="w-full border-t-2 border-dashed border-gray-300 mb-6"></div>
+
+                    <h3 class="font-bold text-xl mb-1 text-text_main" id="success-doc-name">-</h3>
+                    <p class="text-xs text-text_muted mb-6 leading-relaxed" id="success-schedule">-</p>
+                    
+                    <div class="flex justify-between items-center border-t border-border_color pt-5">
+                        <span class="text-sm font-bold text-green-600 flex items-center gap-1"><span class="material-symbols-rounded text-[18px]">verified</span> Paid</span>
+                        <span class="text-xs font-bold text-text_muted">ID: RUA-9921</span>
+                    </div>
+                </div>
+                
+                <button onclick="closeSubPage('page-booking-success'); switchTab('tab-home');" class="w-full bg-white text-primary py-4 rounded-full font-bold text-base btn-soft shadow-lg">Kembali ke Beranda</button>
+            </div>
+        </div>
+
+        <!-- 5. SUB-PAGE: HISTORY KONSULTASI -->
+        <div id="page-history" class="sub-page hidden">
+            <div class="sticky top-0 bg-surface/95 backdrop-blur-md z-30 px-4 py-4 flex items-center gap-3 border-b border-border_color">
+                <button onclick="closeSubPage('page-history')" class="w-10 h-10 flex items-center justify-center bg-bg_app rounded-full text-text_main btn-soft"><span class="material-symbols-rounded">arrow_back</span></button>
+                <h2 class="font-bold text-base text-primary">Riwayat Konsultasi</h2>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex border-b border-border_color mb-2">
+                    <button class="flex-1 py-3 text-sm font-bold text-primary border-b-2 border-primary">Selesai</button>
+                    <button class="flex-1 py-3 text-sm font-bold text-text_muted">Dibatalkan</button>
+                </div>
+                <div class="bg-surface border border-border_color rounded-3xl p-4 shadow-sm">
+                    <div class="flex justify-between items-center mb-3 border-b border-border_color pb-3">
+                        <span class="text-[10px] font-bold text-text_muted">10 Sep 2023 • 09:00 WIB</span>
+                        <span class="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded">Selesai</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl">👨‍⚕️</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm text-text_main">Dr. Reza Pahlevi, Sp.A</h4>
+                            <p class="text-[11px] text-text_muted">Klinik Utama Bandung</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. SUB-PAGE: EDU DETAIL -->
+        <div id="page-edu-detail" class="sub-page hidden">
+            <div class="sticky top-0 bg-surface/95 backdrop-blur-md z-30 px-4 py-4 flex items-center gap-3 border-b border-border_color">
+                <button onclick="closeSubPage('page-edu-detail')" class="w-10 h-10 flex items-center justify-center bg-bg_app rounded-full text-text_main btn-soft"><span class="material-symbols-rounded">arrow_back</span></button>
+                <h2 class="font-bold text-base truncate text-primary" id="edu-det-title-bar">Course Details</h2>
+            </div>
+            <div class="w-full aspect-video bg-black flex items-center justify-center relative cursor-pointer group" onclick="openYT('Edukasi Anak Ruang Ibu')">
+                <img id="edu-det-img" src="" class="w-full h-full object-cover opacity-60">
+                <span class="material-symbols-rounded text-white text-[60px] absolute group-hover:scale-110 transition-transform">play_circle</span>
+            </div>
+            <div class="p-5 space-y-6 pb-20">
+                <div class="border-b border-border_color pb-5">
+                    <span id="edu-det-cat" class="text-[10px] font-bold bg-primary_light/50 text-primary px-2 py-1 rounded uppercase tracking-wider mb-2 inline-block">Kategori</span>
+                    <h2 id="edu-det-title" class="font-heading text-xl font-bold text-text_main mb-2 leading-snug">-</h2>
+                    <p class="text-xs text-text_muted flex items-center gap-1"><span class="font-bold text-yellow-500">⭐ 4.8</span> • Ahli Ruang Ibu</p>
+                </div>
+                <h3 class="font-bold text-sm text-primary mb-2">About this course</h3>
+                <p class="text-xs text-text_muted leading-relaxed mb-6">Course ini dirancang khusus untuk membantu Bunda memahami metode serta strategi psikologis dan nutrisi yang tepat dengan cara yang menyenangkan dan mudah dipraktikkan.</p>
+                <h3 class="font-bold text-sm text-primary mb-3">Episodes (Lessons)</h3>
+                <div class="space-y-3 pb-10">
+                    <div class="bg-surface border border-border_color rounded-2xl p-3 flex items-center gap-3 shadow-sm btn-soft cursor-pointer" onclick="openYT('Edukasi Konsep Dasar')">
+                        <div class="w-12 h-12 bg-cta rounded-xl flex items-center justify-center text-white shrink-0 shadow-inner"><span class="material-symbols-rounded text-[28px]">play_arrow</span></div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-xs text-text_main mb-0.5">1. Pengenalan Konsep Dasar</h4>
+                            <p class="text-[10px] text-text_muted">12 menit</p>
+                        </div>
+                    </div>
+                    <div class="bg-surface border border-border_color rounded-2xl p-3 flex items-center gap-3 shadow-sm btn-soft cursor-pointer" onclick="openYT('Praktik Anak di Rumah')">
+                        <div class="w-12 h-12 bg-cta rounded-xl flex items-center justify-center text-white shrink-0 shadow-inner"><span class="material-symbols-rounded text-[28px]">play_arrow</span></div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-xs text-text_main mb-0.5">2. Praktik Terbaik di Rumah</h4>
+                            <p class="text-[10px] text-text_muted">15 menit</p>
+                        </div>
+                    </div>
+                    <div class="bg-surface border border-border_color rounded-2xl p-3 flex items-center gap-3 shadow-sm btn-soft cursor-pointer" onclick="openYT('Tanya Jawab Ahli')">
+                        <div class="w-12 h-12 bg-cta rounded-xl flex items-center justify-center text-white shrink-0 shadow-inner"><span class="material-symbols-rounded text-[28px]">play_arrow</span></div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-xs text-text_main mb-0.5">3. Tanya Jawab Studi Kasus</h4>
+                            <p class="text-[10px] text-text_muted">10 menit</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. SUB-PAGE: REPORT SCREEN (Interactive Progress) -->
+        <div id="page-report" class="sub-page hidden px-5 py-5">
+            <button onclick="closeSubPage('page-report')" class="w-10 h-10 flex items-center justify-center bg-bg_app border border-border_color rounded-full text-text_main mb-6 btn-soft shadow-sm"><span class="material-symbols-rounded">arrow_back</span></button>
+            <h2 class="font-heading text-2xl font-bold text-primary mb-6">Progress Report</h2>
+            <div class="flex bg-bg_app border border-border_color rounded-xl p-1 mb-6 shadow-inner" id="report-filters">
+                <button onclick="changeReportPeriod('7m', this)" class="rep-btn flex-1 bg-surface shadow-sm rounded-lg py-2 text-xs font-bold text-primary transition-colors">7 Minggu</button>
+                <button onclick="changeReportPeriod('1b', this)" class="rep-btn flex-1 rounded-lg py-2 text-xs font-bold text-text_muted transition-colors">1 Bulan</button>
+                <button onclick="changeReportPeriod('6b', this)" class="rep-btn flex-1 rounded-lg py-2 text-xs font-bold text-text_muted transition-colors">6 Bulan</button>
+            </div>
+            <div class="w-full h-56 bg-surface border border-border_color rounded-3xl p-4 flex flex-col justify-end mb-8 shadow-sm relative overflow-hidden">
+                <div class="absolute top-4 left-4">
+                    <p class="text-[10px] text-text_muted font-bold uppercase">Learning Curve</p>
+                    <p class="text-xl font-heading font-bold text-primary mt-1" id="report-stat">+15% Naik</p>
+                </div>
+                <div class="flex justify-between items-end h-24 gap-2 px-2 border-b border-border_color pb-2" id="report-bars">
+                    <div onclick="showBarDetail(40)" class="w-full bg-primary_light/40 rounded-t-md h-[40%] grow-bar hover:bg-primary cursor-pointer transition-colors"></div>
+                    <div onclick="showBarDetail(55)" class="w-full bg-primary_light/40 rounded-t-md h-[55%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.1s"></div>
+                    <div onclick="showBarDetail(30)" class="w-full bg-primary_light/40 rounded-t-md h-[30%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.2s"></div>
+                    <div onclick="showBarDetail(80)" class="w-full bg-primary_light/40 rounded-t-md h-[80%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.3s"></div>
+                    <div onclick="showBarDetail(95)" class="w-full bg-cta rounded-t-md h-[95%] shadow-md grow-bar cursor-pointer" style="animation-delay:0.4s"></div>
+                </div>
+                <div class="flex justify-between mt-2 px-2 text-[8px] font-bold text-text_muted" id="report-labels">
+                    <span>W1</span><span>W2</span><span>W3</span><span>W4</span><span class="text-primary">W5</span>
+                </div>
+            </div>
+            <div class="bg-primary_light/20 p-5 rounded-3xl border border-primary_light/50 mb-8 min-h-[140px] relative">
+                <h3 class="font-bold text-sm text-primary mb-3 flex items-center gap-1.5"><span class="material-symbols-rounded text-[20px]">auto_awesome</span> AI Analytics Insight</h3>
+                <div id="ai-loading" class="flex flex-col items-center justify-center py-4">
+                    <div class="w-8 h-8 border-4 border-primary_light border-t-primary rounded-full animate-spin"></div>
+                    <p class="text-[10px] font-bold text-primary mt-3 animate-pulse uppercase tracking-widest">Menganalisis Data...</p>
+                </div>
+                <div id="ai-result" class="hidden">
+                    <p class="text-xs leading-relaxed text-text_main font-medium" id="ai-desc">Luar biasa Bunda! Berdasarkan aktivitas terakhir, tingkat penyelesaian sangat baik. Disarankan untuk segera memulai <span class="font-bold text-cta">Modul Terapi Sensori</span>.</p>
+                </div>
+            </div>
+            <div class="pb-10"></div>
+        </div>
+
+        <!-- 8. SUB-PAGE: EXPLORE DETAIL (Struktur Anti Numpuk & Fitur Bookmark & Zoom Gallery) -->
+        <div id="page-explore-detail" class="sub-page hidden flex-col overflow-hidden">
+            <div class="flex-1 overflow-y-auto pb-10 relative">
+                <div class="h-[280px] relative bg-gray-200">
+                    <img id="exp-det-img" src="" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent h-24 pointer-events-none"></div>
+                    
+                    <button onclick="closeSubPage('page-explore-detail')" class="absolute top-5 left-5 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center btn-soft text-white shadow-sm"><span class="material-symbols-rounded text-[24px]">arrow_back</span></button>
+                    <!-- Bookmark/Save Button -->
+                    <button id="btn-save-explore" onclick="toggleSavePlace(this)" class="absolute top-5 right-5 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center btn-soft text-white shadow-sm transition-all duration-300">
+                        <span class="material-symbols-rounded text-[24px] icon-bookmark">bookmark_border</span>
+                    </button>
+                </div>
+                
+                <div class="p-6 relative -mt-8 bg-surface rounded-t-[32px] shadow-[0_-10px_20px_rgba(0,0,0,0.05)] min-h-[500px]">
+                    <div class="flex justify-between items-start mb-2">
+                        <h2 class="font-heading text-2xl font-bold text-text_main max-w-[70%]" id="exp-det-title">-</h2>
+                        <span class="font-bold text-white bg-yellow-500 px-2 py-1 rounded-lg text-xs flex items-center gap-1 shadow-sm" id="exp-det-rating">-</span>
+                    </div>
+                    <p class="text-xs text-text_muted mb-4 flex items-center gap-1.5"><span class="material-symbols-rounded text-[14px] text-primary">location_on</span> <span id="exp-det-loc">-</span></p>
+
+                    <h4 class="font-bold text-sm mb-2 text-primary">Deskripsi Fasilitas</h4>
+                    <p class="text-[11px] text-text_muted leading-relaxed mb-6" id="exp-det-desc">-</p>
+
+                    <!-- Mini Gallery Memicu Zoom -->
+                    <h4 class="font-bold text-sm mb-2 text-primary">Galeri Foto</h4>
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar mb-6 snap-x" id="exp-det-gallery"></div>
+
+                    <h4 class="font-bold text-sm mb-2 text-primary">Lokasi & Peta</h4>
+                    <div class="bg-bg_app border border-border_color rounded-2xl overflow-hidden shadow-sm mb-4">
+                        <div class="h-24 bg-gray-200 relative">
+                            <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80" class="w-full h-full object-cover opacity-70">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-8 h-8 bg-cta rounded-full text-white flex items-center justify-center shadow-lg border-2 border-white"><span class="material-symbols-rounded text-[18px]">location_on</span></div>
+                            </div>
+                        </div>
+                        <div class="p-3 flex justify-between items-center bg-surface">
+                            <div>
+                                <p class="text-[10px] text-text_muted font-bold">Jarak dari lokasi Anda</p>
+                                <p class="text-xs font-bold text-text_main" id="exp-det-dist">-</p>
+                            </div>
+                            <button class="bg-primary_light/30 text-primary px-3 py-1.5 rounded-lg text-[10px] font-bold btn-soft flex items-center gap-1" onclick="window.open('https://maps.google.com/?q=Lokasi', '_blank')">
+                                <span class="material-symbols-rounded text-[14px]">directions</span> Rute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Bottom Fixed Action Bar -->
+            <div class="shrink-0 bg-surface border-t border-border_color px-5 py-4 flex justify-between items-center z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] pb-[calc(16px+env(safe-area-inset-bottom))]">
+                <div>
+                    <p class="text-[10px] text-text_muted uppercase tracking-wider font-bold">Harga Estimasi</p>
+                    <p class="text-lg font-bold text-cta" id="exp-det-price">-</p>
+                </div>
+                <button class="bg-primary text-white px-8 py-3.5 rounded-full font-bold text-sm btn-soft shadow-lg" onclick="showToast('Mengarahkan ke pendaftaran...'); setTimeout(() => { closeSubPage('page-explore-detail'); switchTab('tab-consult'); }, 1500);">
+                    Book Now
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // --- Inisiasi Dasar ---
+    window.onload = () => { 
+        document.getElementById('screen-welcome').classList.add('active'); 
+        renderEduCourses('Semua'); 
+        renderExploreData('Semua'); 
+    };
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').innerText = msg;
+        t.classList.remove('opacity-0', 'pointer-events-none');
+        t.style.transform = 'translate(-50%, 15px)';
+        setTimeout(() => {
+            t.classList.add('opacity-0', 'pointer-events-none');
+            t.style.transform = 'translate(-50%, 0)';
+        }, 2500);
+    }
+
+    // --- Onboarding Flow (Bebas Error) ---
+    function nav(id) {
+        document.querySelectorAll('.screen').forEach(s => {
+            s.classList.remove('active', 'flex');
+        });
+        const target = document.getElementById(id);
+        target.classList.add('active');
+        if(id === 'screen-mainapp') target.classList.add('flex');
+        
+        target.scrollTop = 0;
+        
+        document.getElementById('mood-popup').style.display = 'none';
+        document.getElementById('mood-popup').classList.add('hidden');
+    }
+
+    function saveProfile() {
+        const name = document.getElementById('reg-name').value || "Bunda";
+        document.getElementById('hdr-name').innerText = name;
+        document.getElementById('hdr-avatar').innerText = name.charAt(0).toUpperCase();
+        nav('screen-login');
+    }
+
+    let currentMoodQuery = "";
+    function showMoodPopup(mood, desc, ytQuery) {
+        document.getElementById('mood-title').innerText = `Perasaanmu Valid (${mood})`;
+        document.getElementById('mood-desc').innerText = desc;
+        document.getElementById('mood-vid-title').innerText = "Cari di YouTube: " + ytQuery;
+        currentMoodQuery = ytQuery;
+        
+        const popup = document.getElementById('mood-popup');
+        popup.classList.remove('hidden');
+        popup.style.display = 'flex'; 
+    }
+
+    function openYT(q) { window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(q), '_blank'); }
+
+    // --- Main App Logic (Selalu Masuk Home) ---
+    function enterMainApp() {
+        nav('screen-mainapp');
+        renderCommunityFeed('All');
+        renderHomeExplore();
+        switchTab('tab-home'); 
+    }
+
+    function switchTab(id) {
+        document.querySelectorAll('.tab-content').forEach(p => {
+            p.classList.remove('active');
+        });
+        const target = document.getElementById(id);
+        target.classList.add('active');
+        document.getElementById('tabs-container').scrollTop = 0;
+
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.classList.remove('text-cta', 'text-primary'); btn.classList.add('text-text_muted');
+            btn.querySelector('span').style.fontVariationSettings = "'FILL' 0";
+        });
+        const activeBtn = document.getElementById('nav-' + id);
+        if(activeBtn) {
+            activeBtn.classList.remove('text-text_muted'); 
+            activeBtn.classList.add('text-cta');
+            activeBtn.querySelector('span').style.fontVariationSettings = "'FILL' 1";
+        }
+
+        const fab = document.getElementById('fab-post');
+        if(id === 'tab-community') { fab.classList.remove('hidden'); fab.classList.add('flex'); } else { fab.classList.add('hidden'); fab.classList.remove('flex'); }
+    }
+
+    function openSubPage(pageId) {
+        const target = document.getElementById(pageId);
+        target.classList.remove('hidden');
+        if (pageId === 'page-expert-detail' || pageId === 'page-payment' || pageId === 'page-explore-detail' || pageId === 'page-chat') {
+            target.classList.add('flex');
+        } else {
+             target.classList.add('block'); 
+        }
+        target.classList.add('animate-slide-up');
+        const scrollArea = target.querySelector('.overflow-y-auto');
+        if (scrollArea) { scrollArea.scrollTop = 0; } else { target.scrollTop = 0; }
+    }
+
+    function closeSubPage(pageId) {
+        const target = document.getElementById(pageId);
+        target.classList.add('hidden');
+        target.classList.remove('flex', 'block', 'animate-slide-up');
+    }
+
+    // ========================================================
+    // LOGIKA CHAT HALODOC STYLE
+    // ========================================================
+    function openChat(expertType) {
+        document.getElementById('chat-title').innerText = "Konsultasi " + expertType;
+        document.getElementById('chat-messages').innerHTML = `
+            <div class="flex justify-center mb-4"><span class="text-[10px] bg-border_color/50 px-3 py-1 rounded-full text-text_muted">Chat dienkripsi End-to-End</span></div>
+            <div class="flex gap-3">
+                <div class="w-8 h-8 bg-primary_light/50 rounded-full flex items-center justify-center text-sm shrink-0">🩺</div>
+                <div class="bg-white border border-border_color p-3 rounded-2xl rounded-tl-none max-w-[80%] shadow-sm">
+                    <p class="text-xs text-text_main leading-relaxed">Halo Bunda, saya Ahli dari Ruang Ibu. Ada keluhan apa yang bisa saya bantu hari ini?</p>
+                </div>
+            </div>
+        `;
+        openSubPage('page-chat');
+    }
+
+    function sendChat() {
+        const input = document.getElementById('chat-input');
+        const text = input.value;
+        if(text.trim() === "") return;
+        
+        const container = document.getElementById('chat-messages');
+        container.innerHTML += `
+            <div class="flex justify-end gap-3 mt-3">
+                <div class="bg-primary text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] shadow-sm">
+                    <p class="text-xs leading-relaxed">${text}</p>
+                </div>
+            </div>
+        `;
+        input.value = "";
+        container.scrollTop = container.scrollHeight;
+
+        setTimeout(() => {
+            container.innerHTML += `
+                <div class="flex gap-3 mt-3">
+                    <div class="w-8 h-8 bg-primary_light/50 rounded-full flex items-center justify-center text-sm shrink-0">🩺</div>
+                    <div class="bg-white border border-border_color p-3 rounded-2xl rounded-tl-none max-w-[80%] shadow-sm">
+                        <p class="text-xs text-text_main leading-relaxed">Baik Bunda, terima kasih atas informasinya. Tunggu sebentar ya, saya akan mengecek dan membalas pertanyaan Bunda segera.</p>
+                    </div>
+                </div>
+            `;
+            container.scrollTop = container.scrollHeight;
+        }, 1500);
+    }
+
+    // ========================================================
+    // LOGIKA KONSULTASI (EXPERT & BOOKING FLOW)
+    // ========================================================
+    const expertsData = [
+        { id: 1, type: 'Dokter Anak', name: 'Dr. Reza Pahlevi, Sp.A', role: 'Pediatrician', rating: '4.9', reviews: '120', exp: '10+', img: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&q=80', patients: '1K+', price: 'Rp 150.000' },
+        { id: 2, type: 'Dokter Anak', name: 'Dr. Amanda Sarah, Sp.A', role: 'Tumbuh Kembang', rating: '4.8', reviews: '95', exp: '8+', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&q=80', patients: '800+', price: 'Rp 120.000' },
+        { id: 3, type: 'Psikolog Klinis', name: 'Maya Kusuma, M.Psi', role: 'Psikolog Anak', rating: '5.0', reviews: '200', exp: '12+', img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80', patients: '2K+', price: 'Rp 200.000' },
+        { id: 4, type: 'Terapis Wicara', name: 'Budi Santoso, Amd.TW', role: 'Spesialis Wicara', rating: '4.7', reviews: '45', exp: '5+', img: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=200&q=80', patients: '500+', price: 'Rp 100.000' },
+        { id: 5, type: 'Terapis Okupasi', name: 'Siti Aminah, S.Tr.Kes', role: 'Sensori Integrasi', rating: '4.9', reviews: '110', exp: '7+', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&q=80', patients: '900+', price: 'Rp 110.000' }, 
+        { id: 6, type: 'Dokter Anak', name: 'Dr. Rudi Hartono, Sp.A', role: 'Neurologi Anak', rating: '4.7', reviews: '60', exp: '15+', img: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=200&q=80', patients: '1.5K+', price: 'Rp 180.000' },
+        { id: 7, type: 'Psikolog Klinis', name: 'Dian Sastro, M.Psi', role: 'Psikolog Klinis Dewasa', rating: '4.8', reviews: '80', exp: '6+', img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80', patients: '400+', price: 'Rp 180.000' }
+    ];
+
+    let myBookings = [];
+    let curExpert = null;
+    let curDate = '24 Mei';
+    let curTime = '09:00';
+
+    function openExpertList(category) {
+        document.getElementById('expert-list-title').innerText = category;
+        const container = document.getElementById('expert-list-container');
+        const filtered = expertsData.filter(e => e.type === category);
+        const displayData = filtered.length > 0 ? filtered : expertsData; 
+
+        container.innerHTML = displayData.map(e => `
+            <div class="bg-surface rounded-3xl p-4 shadow-sm border border-border_color flex gap-4 btn-soft cursor-pointer" onclick="openExpertDetail(${e.id})">
+                <div class="w-16 h-16 rounded-2xl bg-gray-200 overflow-hidden shrink-0"><img src="${e.img}" class="w-full h-full object-cover"></div>
+                <div class="flex-1 py-0.5">
+                    <h4 class="font-bold text-sm text-text_main mb-1 line-clamp-1">${e.name}</h4>
+                    <p class="text-[11px] text-text_muted mb-2">${e.role}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-yellow-500 flex items-center">⭐ ${e.rating}</span>
+                        <button class="bg-primary text-white px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-sm">Book</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        openSubPage('page-list-expert');
+    }
+
+    function openExpertDetail(id) {
+        curExpert = expertsData.find(e => e.id === id);
+        document.getElementById('detail-img').src = curExpert.img;
+        document.getElementById('detail-name').innerText = curExpert.name;
+        document.getElementById('detail-role').innerText = curExpert.role;
+        document.getElementById('detail-patients').innerText = curExpert.patients;
+        document.getElementById('detail-exp').innerText = curExpert.exp;
+        document.getElementById('detail-rating').innerHTML = `${curExpert.rating} <span class="material-symbols-rounded text-[14px] text-yellow-500" style="font-variation-settings:'FILL' 1">star</span>`;
+        document.getElementById('detail-reviews').innerText = curExpert.reviews + " Reviews";
+        
+        selectDate(document.querySelector('.date-btn'), '24 Mei');
+        selectTime(document.querySelector('.time-btn'), '09:00');
+        openSubPage('page-expert-detail');
+    }
+
+    function selectDate(el, date) {
+        document.querySelectorAll('.date-btn').forEach(btn => {
+            btn.className = "date-btn bg-surface border border-border_color text-text_muted min-w-[65px] py-3 rounded-2xl text-center shadow-sm cursor-pointer btn-soft";
+        });
+        el.className = "date-btn bg-primary text-white min-w-[65px] py-3 rounded-2xl text-center shadow-md cursor-pointer btn-soft";
+        curDate = date;
+    }
+
+    function selectTime(el, time) {
+        document.querySelectorAll('.time-btn').forEach(btn => {
+            btn.className = "time-btn bg-primary_light/30 text-primary py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs";
+        });
+        el.className = "time-btn bg-primary text-white py-2.5 rounded-xl text-center cursor-pointer btn-soft font-bold text-xs shadow-sm";
+        curTime = time;
+    }
+
+    function goToPayment() {
+        document.getElementById('pay-doc-name').innerText = curExpert.name;
+        document.getElementById('pay-schedule').innerText = `${curDate} • ${curTime} WIB`;
+        document.getElementById('pay-total').innerText = curExpert.price;
+        closeSubPage('page-expert-detail');
+        closeSubPage('page-list-expert');
+        openSubPage('page-payment');
+    }
+
+    function processPayment() {
+        myBookings.push({ doc: curExpert.name, date: curDate, time: curTime });
+        updateHomeJadwal();
+
+        document.getElementById('success-doc-name').innerText = curExpert.name;
+        document.getElementById('success-schedule').innerHTML = `${curDate} • ${curTime} WIB<br>Klinik Utama Bandung`;
+        
+        closeSubPage('page-payment');
+        openSubPage('page-booking-success');
+    }
+
+    function updateHomeJadwal() {
+        const container = document.getElementById('home-jadwal-container');
+        const wrapper = document.getElementById('home-reminder-wrapper');
+        
+        if(myBookings.length > 0) {
+            wrapper.classList.remove('hidden');
+            container.innerHTML = myBookings.map(b => `
+                <div class="bg-primary rounded-3xl p-5 relative overflow-hidden text-white shadow-md">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full"></div>
+                    <div class="flex items-center gap-4 mb-4 relative z-10">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">🩺</div>
+                        <div>
+                            <p class="font-bold text-sm mb-0.5">${b.doc}</p>
+                            <p class="text-[10px] opacity-80">Konsultasi Terjadwal</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 rounded-2xl p-3 flex justify-between items-center text-xs font-medium backdrop-blur-sm relative z-10">
+                        <span>${b.date}, ${b.time} WIB</span>
+                        <span class="font-bold text-green-300">Confirmed ✓</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // ========================================================
+    // LOGIKA COMMUNITY (RUANG CURHAT)
+    // ========================================================
+    let communityPosts = [
+        { id: 1, author: "Kemenkes RI", role: "Official", text: "Pemerintah resmi luncurkan program skrining kesehatan mental dan autisme gratis di Posyandu seluruh Indonesia per bulan ini.", likes: 4500, comments: 320, isLiked: false, isTrending: true, initial: "K", color: "bg-red-50 text-red-600", showVerified: true },
+        { id: 2, author: "Ayu Dewi", role: "Bunda", text: "Selamat Hari Kesadaran Autisme Sedunia! Mari kita bangun lingkungan yang inklusif untuk anak-anak spesial kita. Kalian hebat, Bun! ❤️", likes: 1800, comments: 120, isLiked: false, isTrending: true, initial: "A", color: "bg-primary_light/50 text-primary", showVerified: true },
+        { id: 3, author: "Dr. Meta Hanindita", role: "Dokter", text: "Batasi asupan gula harian anak ya, Bun! Hal ini juga bisa mempengaruhi tingkat fokus dan tantrum anak.", likes: 3200, comments: 150, isLiked: false, isTrending: false, initial: "👨‍⚕️", color: "bg-blue-50 text-blue-600", showVerified: true },
+        { id: 4, author: "Bunda Rafa", role: "Bunda", text: "Akhirnya hari ini terapi sensori jalan lancar tanpa tantrum. Rasanya mau nangis terharu 😭", likes: 340, comments: 25, isLiked: false, isTrending: false, initial: "R", color: "bg-orange-50 text-orange-600", showVerified: false },
+        { id: 5, author: "Psikolog Maya", role: "Psikolog", text: "Ingat, setiap anak punya timeline-nya sendiri. Jangan bandingkan anak Bunda dengan anak tetangga ya.", likes: 2100, comments: 88, isLiked: false, isTrending: true, initial: "🧠", color: "bg-green-50 text-green-600", showVerified: true }
+    ];
+
+    let currentActivePostIdForReply = null;
+
+    function renderCommunityFeed(filter) {
+        const container = document.getElementById('feed-container');
+        let filtered = communityPosts;
+        if (filter === 'Trending') filtered = communityPosts.filter(p => p.isTrending);
+
+        container.innerHTML = filtered.map(p => `
+            <div class="bg-surface rounded-3xl p-5 border border-border_color shadow-sm">
+                <div class="flex gap-3 mb-2">
+                    <div class="w-10 h-10 ${p.color} rounded-full flex items-center justify-center font-bold text-sm shrink-0">${p.initial}</div>
+                    <div>
+                        <div class="flex items-center gap-1">
+                            <h4 class="font-bold text-sm text-text_main">${p.author}</h4>
+                            ${p.showVerified ? `<span class="material-symbols-rounded text-[16px] text-blue-500" style="font-variation-settings: 'FILL' 1">verified</span>` : ''}
+                        </div>
+                        <p class="text-[10px] text-text_muted mt-0.5">${p.role}</p>
+                    </div>
+                </div>
+                <p class="text-sm mb-4 ml-14 leading-relaxed text-text_main">${p.text}</p>
+                <div class="flex gap-6 ml-14 border-t border-border_color pt-3">
+                    <button class="flex items-center gap-1.5 text-xs font-semibold ${p.isLiked ? 'text-cta' : 'text-text_muted'} btn-soft" onclick="toggleFeedLike(${p.id})">
+                        <span class="material-symbols-rounded text-[20px] ${p.isLiked ? 'liked-icon' : ''}">favorite</span> <span>${formatNumber(p.likes)}</span>
+                    </button>
+                    <button class="flex items-center gap-1.5 text-xs font-semibold text-text_muted btn-soft" onclick="openReplyModal(${p.id})">
+                        <span class="material-symbols-rounded text-[20px]">chat_bubble</span> ${formatNumber(p.comments)}
+                    </button>
+                </div>
+            </div>
+        `).join('') + '<div class="h-24"></div>';
+    }
+
+    function formatNumber(num) { return num > 999 ? (num/1000).toFixed(1) + 'K' : num; }
+
+    function setCommunityFilter(filter, btnEl) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white'); btn.classList.add('bg-surface', 'text-text_muted');
+        });
+        btnEl.classList.remove('bg-surface', 'text-text_muted'); btnEl.classList.add('bg-primary', 'text-white');
+        renderCommunityFeed(filter);
+    }
+
+    function toggleFeedLike(id) {
+        const post = communityPosts.find(p => p.id === id);
+        if (post) {
+            post.isLiked = !post.isLiked;
+            post.isLiked ? post.likes++ : post.likes--;
+            const activeFilterBtn = document.querySelector('.filter-btn.bg-primary');
+            const activeFilter = activeFilterBtn && activeFilterBtn.innerText.includes('Trending') ? 'Trending' : 'All';
+            renderCommunityFeed(activeFilter);
+        }
+    }
+
+    function openCreatePostModal() { 
+        document.getElementById('modal-create-post').classList.remove('hidden'); 
+        document.getElementById('modal-create-post').classList.add('flex');
+    }
+    function closeCreatePostModal() { 
+        document.getElementById('modal-create-post').classList.add('hidden');
+        document.getElementById('modal-create-post').classList.remove('flex');
+    }
+
+    function submitNewPost() {
+        const text = document.getElementById('input-post-text').value;
+        if(text.trim() === '') return showToast('Cerita tidak boleh kosong Bun!');
+        
+        const userName = document.getElementById('hdr-name').innerText;
+        const newPost = {
+            id: Date.now(), author: "Bunda " + userName, role: "Bunda", text: text,
+            likes: 0, comments: 0, isLiked: false, isTrending: false,
+            initial: userName.charAt(0).toUpperCase(), color: "bg-primary_light text-primary", showVerified: false
+        };
+
+        communityPosts.unshift(newPost);
+        document.getElementById('input-post-text').value = '';
+        closeCreatePostModal(); showToast('Cerita berhasil diposting!');
+        
+        const allBtn = document.querySelectorAll('.filter-btn')[0];
+        setCommunityFilter('All', allBtn);
+    }
+
+    function openReplyModal(postId) { 
+        currentActivePostIdForReply = postId; 
+        document.getElementById('modal-reply').classList.remove('hidden'); 
+        document.getElementById('modal-reply').classList.add('flex');
+    }
+    function closeReplyModal() { 
+        document.getElementById('modal-reply').classList.add('hidden'); 
+        document.getElementById('modal-reply').classList.remove('flex');
+        currentActivePostIdForReply = null; 
+    }
+
+    function submitReply() {
+        const text = document.getElementById('input-reply-text').value;
+        if(text.trim() === '') return showToast('Balasan tidak boleh kosong!');
+        if(currentActivePostIdForReply) { 
+            const post = communityPosts.find(p => p.id === currentActivePostIdForReply); 
+            if(post) post.comments++; 
+        }
+        document.getElementById('input-reply-text').value = '';
+        closeReplyModal(); showToast('Balasan berhasil dikirim!');
+        const activeFilterBtn = document.querySelector('.filter-btn.bg-primary');
+        const activeFilter = activeFilterBtn && activeFilterBtn.innerText.includes('Trending') ? 'Trending' : 'All';
+        renderCommunityFeed(activeFilter);
+    }
+
+    // ========================================================
+    // LOGIKA EDUKASI 
+    // ========================================================
+    const eduCoursesData = [
+        { id: 1, cat: 'Nutrisi', title: 'Atasi Anak GTM', rating: '4.8', img: 'https://images.unsplash.com/photo-1615486511484-92e172cb4fec?w=300&q=80', color: 'bg-orange-100', icon: 'restaurant_menu' },
+        { id: 2, cat: 'Nutrisi', title: 'Ide Meal Prep Bekal Anak Sehat', rating: '4.9', img: 'https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=300&q=80', color: 'bg-yellow-100', icon: 'lunch_dining' },
+        { id: 3, cat: 'Nutrisi', title: 'Pentingnya Sayur & Buah', rating: '4.7', img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=300&q=80', color: 'bg-green-100', icon: 'nutrition' },
+        { id: 101, cat: 'Nutrisi', title: 'Gizi Pengganti Susu Sapi', rating: '4.9', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&q=80', color: 'bg-blue-100', icon: 'local_drink' },
+        { id: 102, cat: 'Nutrisi', title: 'Trik Anak Suka Ikan', rating: '4.6', img: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=300&q=80', color: 'bg-red-100', icon: 'set_meal' },
+
+        { id: 4, cat: 'Tumbuh Kembang', title: 'Stimulasi Motorik Halus', rating: '4.9', img: 'https://images.unsplash.com/photo-1543333995-a78aea2efa50?w=300&q=80', color: 'bg-blue-100', icon: 'toys' },
+        { id: 5, cat: 'Tumbuh Kembang', title: 'Mengenal Fase Tantrum Anak', rating: '4.6', img: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=300&q=80', color: 'bg-red-100', icon: 'mood_bad' },
+        { id: 6, cat: 'Tumbuh Kembang', title: 'Latihan Keseimbangan', rating: '4.8', img: 'https://images.unsplash.com/photo-1514984879728-be0aff75a6e8?w=300&q=80', color: 'bg-indigo-100', icon: 'directions_walk' },
+        { id: 103, cat: 'Tumbuh Kembang', title: 'Mengajarkan Toilet Training', rating: '4.7', img: 'https://images.unsplash.com/photo-1584362917165-526a968579e8?w=300&q=80', color: 'bg-teal-100', icon: 'bathroom' },
+        { id: 104, cat: 'Tumbuh Kembang', title: 'Persiapan Masuk Sekolah', rating: '4.9', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=300&q=80', color: 'bg-orange-100', icon: 'school' },
+
+        { id: 7, cat: 'Terapi Wicara', title: 'Terapi Speech Delay', rating: '4.7', img: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=300&q=80', color: 'bg-teal-100', icon: 'record_voice_over' },
+        { id: 8, cat: 'Terapi Wicara', title: 'Oral Motor Dasar', rating: '4.8', img: 'https://images.unsplash.com/photo-1596460107916-430662021049?w=300&q=80', color: 'bg-cyan-100', icon: 'face' },
+        { id: 9, cat: 'Terapi Wicara', title: 'Bermain Peran', rating: '4.9', img: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=300&q=80', color: 'bg-purple-100', icon: 'forum' },
+        { id: 105, cat: 'Terapi Wicara', title: 'Latihan Meniup & Menghisap', rating: '4.7', img: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=300&q=80', color: 'bg-rose-100', icon: 'air' },
+        { id: 106, cat: 'Terapi Wicara', title: 'Mengenalkan Kata Pertama', rating: '4.9', img: 'https://images.unsplash.com/photo-1566004100631-35d015d6a491?w=300&q=80', color: 'bg-sky-100', icon: 'child_care' },
+
+        { id: 10, cat: 'Sensori & Motorik', title: 'Bermain Tekstur Pasir', rating: '4.9', img: 'https://images.unsplash.com/photo-1560859253-29af01d6be33?w=300&q=80', color: 'bg-pink-100', icon: 'back_hand' },
+        { id: 11, cat: 'Sensori & Motorik', title: 'Terapi Air & Busa di Rumah', rating: '4.8', img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=300&q=80', color: 'bg-rose-100', icon: 'water_drop' },
+        { id: 12, cat: 'Sensori & Motorik', title: 'Melompat & Memanjat', rating: '4.7', img: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=300&q=80', color: 'bg-sky-100', icon: 'nordic_walking' },
+        { id: 107, cat: 'Sensori & Motorik', title: 'Pijat Bayi & Anak', rating: '4.9', img: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=300&q=80', color: 'bg-yellow-100', icon: 'spa' },
+        { id: 108, cat: 'Sensori & Motorik', title: 'Latihan Penciuman Bunga', rating: '4.8', img: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=300&q=80', color: 'bg-purple-100', icon: 'local_florist' }
+    ];
+
+    function renderEduCourses(filter) {
+        const grid = document.getElementById('edu-grid');
+        let filtered = eduCoursesData;
+        if (filter !== 'Semua') { filtered = eduCoursesData.filter(c => c.cat === filter); }
+        grid.innerHTML = filtered.map(c => `
+            <div onclick="openEduDetail('${c.title}', '${c.cat}', '${c.img}')" class="bg-surface rounded-3xl overflow-hidden border border-border_color shadow-sm cursor-pointer btn-soft flex flex-col h-full">
+                <div class="h-28 bg-gray-200 relative w-full">
+                    <img src="${c.img}" class="w-full h-full object-cover">
+                    <div class="absolute top-2 left-2 w-8 h-8 ${c.color} rounded-full flex items-center justify-center text-primary shadow-sm backdrop-blur-sm"><span class="material-symbols-rounded text-[16px]">${c.icon}</span></div>
+                </div>
+                <div class="p-3 flex flex-col flex-1">
+                    <h4 class="font-bold text-xs text-text_main leading-snug mb-1 line-clamp-2">${c.title}</h4>
+                    <div class="mt-auto pt-2 flex items-center justify-between">
+                        <span class="text-[9px] font-bold text-text_muted border border-border_color px-1.5 py-0.5 rounded">${c.cat}</span>
+                        <span class="text-[10px] font-bold text-yellow-500 flex items-center">⭐ ${c.rating}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterEdu(filter, btnEl) {
+        document.querySelectorAll('.edu-filter-btn').forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white'); btn.classList.add('bg-surface', 'text-text_muted');
+        });
+        btnEl.classList.remove('bg-surface', 'text-text_muted'); btnEl.classList.add('bg-primary', 'text-white');
+        renderEduCourses(filter);
+    }
+
+    function openEduDetail(title, cat, img) {
+        document.getElementById('edu-det-title').innerText = title;
+        document.getElementById('edu-det-cat').innerText = cat;
+        
+        const vidImg = document.getElementById('edu-det-img');
+        if(vidImg) vidImg.src = img;
+        
+        openSubPage('page-edu-detail');
+    }
+
+    function openReport() {
+        openSubPage('page-report');
+        changeReportPeriod('7m', document.querySelector('.rep-btn'));
+    }
+
+    function changeReportPeriod(period, btnEl) {
+        document.querySelectorAll('.rep-btn').forEach(btn => {
+            btn.classList.remove('bg-surface', 'shadow-sm', 'text-primary');
+            btn.classList.add('text-text_muted');
+        });
+        btnEl.classList.add('bg-surface', 'shadow-sm', 'text-primary');
+        btnEl.classList.remove('text-text_muted');
+
+        const stat = document.getElementById('report-stat');
+        const bars = document.getElementById('report-bars');
+        const labels = document.getElementById('report-labels');
+        const loader = document.getElementById('ai-loading');
+        const result = document.getElementById('ai-result');
+        const desc = document.getElementById('ai-desc');
+
+        loader.classList.remove('hidden'); result.classList.add('hidden');
+        bars.innerHTML = ''; 
+
+        setTimeout(() => {
+            if(period === '7m') {
+                stat.innerText = '+15% Naik';
+                labels.innerHTML = `<span>W1</span><span>W2</span><span>W3</span><span>W4</span><span class="text-primary">W5</span>`;
+                bars.innerHTML = `
+                    <div onclick="showBarDetail(40)" class="w-full bg-primary_light/40 rounded-t-md h-[40%] grow-bar hover:bg-primary cursor-pointer transition-colors"></div>
+                    <div onclick="showBarDetail(55)" class="w-full bg-primary_light/40 rounded-t-md h-[55%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.1s"></div>
+                    <div onclick="showBarDetail(30)" class="w-full bg-primary_light/40 rounded-t-md h-[30%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.2s"></div>
+                    <div onclick="showBarDetail(80)" class="w-full bg-primary_light/40 rounded-t-md h-[80%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.3s"></div>
+                    <div onclick="showBarDetail(95)" class="w-full bg-cta rounded-t-md h-[95%] shadow-md grow-bar cursor-pointer" style="animation-delay:0.4s"></div>
+                `;
+                desc.innerHTML = `Luar biasa Bunda! Berdasarkan aktivitas 7 minggu terakhir, tingkat penyelesaian Modul Nutrisi sangat baik. Disarankan untuk segera memulai <span class="font-bold text-cta">Modul Terapi Sensori</span>.`;
+            } else if (period === '1b') {
+                stat.innerText = '+5% Stabil';
+                labels.innerHTML = `<span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span class="text-primary">Mei</span>`;
+                bars.innerHTML = `
+                    <div onclick="showBarDetail(60)" class="w-full bg-primary_light/40 rounded-t-md h-[60%] grow-bar hover:bg-primary cursor-pointer transition-colors"></div>
+                    <div onclick="showBarDetail(65)" class="w-full bg-primary_light/40 rounded-t-md h-[65%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.1s"></div>
+                    <div onclick="showBarDetail(70)" class="w-full bg-primary_light/40 rounded-t-md h-[70%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.2s"></div>
+                    <div onclick="showBarDetail(68)" class="w-full bg-primary_light/40 rounded-t-md h-[68%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.3s"></div>
+                    <div onclick="showBarDetail(75)" class="w-full bg-cta rounded-t-md h-[75%] shadow-md grow-bar cursor-pointer" style="animation-delay:0.4s"></div>
+                `;
+                desc.innerHTML = `Perkembangan 1 bulan ini cukup stabil. Si kecil sudah mulai terbiasa dengan jadwal hariannya. Teruskan ya Bun!`;
+            } else {
+                stat.innerText = '+25% Signifikan';
+                labels.innerHTML = `<span>S1</span><span>S2</span><span>S3</span><span>S4</span><span class="text-primary">S5</span>`;
+                bars.innerHTML = `
+                    <div onclick="showBarDetail(30)" class="w-full bg-primary_light/40 rounded-t-md h-[30%] grow-bar hover:bg-primary cursor-pointer transition-colors"></div>
+                    <div onclick="showBarDetail(45)" class="w-full bg-primary_light/40 rounded-t-md h-[45%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.1s"></div>
+                    <div onclick="showBarDetail(60)" class="w-full bg-primary_light/40 rounded-t-md h-[60%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.2s"></div>
+                    <div onclick="showBarDetail(80)" class="w-full bg-primary_light/40 rounded-t-md h-[80%] grow-bar hover:bg-primary cursor-pointer transition-colors" style="animation-delay:0.3s"></div>
+                    <div onclick="showBarDetail(90)" class="w-full bg-cta rounded-t-md h-[90%] shadow-md grow-bar cursor-pointer" style="animation-delay:0.4s"></div>
+                `;
+                desc.innerHTML = `Sangat membanggakan! Dalam 6 bulan ini, terlihat peningkatan pesat kemampuan motorik anak. Konsultasikan dengan dokter untuk langkah lanjutan.`;
+            }
+            loader.classList.add('hidden'); result.classList.remove('hidden');
+            result.style.animation = "fadeIn 0.5s ease-out forwards";
+        }, 1500);
+    }
+
+    function showBarDetail(val) { showToast(`Pencapaian: ${val}% Selesai`); }
+
+    // ========================================================
+    // LOGIKA EXPLORE (DIPERBARUI ALA TRAVELOKA)
+    // ========================================================
+    const exploreData = [
+        { id: 1, name: 'RS Hermina (Poli Anak)', cat: 'Rumah Sakit', rating: '4.8', dist: '1.2 km', img: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&q=80', loc: 'Jl. Pasteur No. 107, Bandung', price: 'Start Rp 150k', isTop: true, desc: 'Sangat direkomendasikan bagi ABK karena memiliki Poli Anak Khusus dengan tim terapis okupasi dan wicara yang tersertifikasi.' },
+        { id: 2, name: 'Klinik Tumbuh Kembang Pelita', cat: 'Tempat Terapi', rating: '4.9', dist: '3.5 km', img: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&q=80', loc: 'Jl. Buah Batu No. 12, Bandung', price: 'Start Rp 120k', isTop: true, desc: 'Pusat terapi tumbuh kembang yang berfokus pada pendekatan Floor Time dan Sensori Integrasi.' },
+        { id: 3, name: 'SLB Negeri A Kota Bandung', cat: 'Sekolah', rating: '4.7', dist: '5.0 km', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80', loc: 'Jl. Pajajaran, Bandung', price: 'Gratis / Disubsidi', isTop: false, desc: 'Sekolah Luar Biasa dengan fasilitas lengkap yang didukung oleh pemerintah.' },
+        { id: 4, name: 'Taman Inklusi Ki Hajar', cat: 'Playground', rating: '4.8', dist: '2.1 km', img: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&q=80', loc: 'Taman Maluku, Bandung', price: 'Gratis', isTop: false, desc: 'Taman bermain pertama di Bandung yang didesain khusus agar aman bagi anak-anak pengguna kursi roda dan anak dengan ASD.' },
+        { id: 5, name: 'Pusat Terapi Wicara Bunda', cat: 'Tempat Terapi', rating: '4.7', dist: '4.1 km', img: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=600&q=80', loc: 'Antapani, Bandung', price: 'Start Rp 100k', isTop: true, desc: 'Klinik terapi khusus penanganan anak dengan Speech Delay dan GTM.' },
+        { id: 6, name: 'RSIA Limijati', cat: 'Rumah Sakit', rating: '4.6', dist: '3.2 km', img: 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&q=80', loc: 'Jl. LLRE Martadinata', price: 'Start Rp 180k', isTop: false, desc: 'Fasilitas kesehatan ibu dan anak terpadu, termasuk layanan psikologi perkembangan anak.' },
+        { id: 7, name: 'Sekolah Cita Hati', cat: 'Sekolah', rating: '4.9', dist: '4.5 km', img: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80', loc: 'Dago, Bandung', price: 'Rp 500k/bln', isTop: true, desc: 'Sekolah inklusi swasta dengan pendekatan Montessori.' },
+        { id: 8, name: 'Kidz Playground', cat: 'Playground', rating: '4.8', dist: '1.5 km', img: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&q=80', loc: 'Paskal, Bandung', price: 'Rp 50k/jam', isTop: false, desc: 'Area bermain indoor dengan kolam bola yang sangat bagus untuk menstimulasi sensori anak.' }
+    ];
+
+    function renderHomeExplore() {
+        const container = document.getElementById('home-explore-list');
+        const items = exploreData.filter(d => d.isTop).slice(0, 3);
+        container.innerHTML = items.map(d => `
+            <div onclick="openExploreDetail(${d.id})" class="min-w-[220px] h-32 rounded-[24px] relative overflow-hidden bg-gray-800 text-white shadow-md snap-center cursor-pointer btn-soft img-gradient">
+                <img src="${d.img}" class="w-full h-full object-cover absolute inset-0 mix-blend-overlay opacity-80">
+                <div class="absolute bottom-3 left-4 right-4 z-10">
+                    <span class="bg-primary px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider mb-1 inline-block">${d.cat}</span>
+                    <h4 class="font-heading font-bold text-sm leading-tight line-clamp-1 mb-1 shadow-sm">${d.name}</h4>
+                    <p class="text-[10px] font-medium flex items-center gap-1"><span class="text-yellow-400">⭐ ${d.rating}</span> • ${d.price}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderExploreData(filter) {
+        const topContainer = document.getElementById('explore-horizontal-list');
+        const nearbyContainer = document.getElementById('explore-vertical-list');
+        
+        let filtered = exploreData;
+        if (filter !== 'Semua') {
+            filtered = exploreData.filter(d => d.cat === filter);
+        }
+
+        const topItems = filtered.filter(d => d.isTop).length > 0 ? filtered.filter(d => d.isTop) : filtered.slice(0,3);
+        topContainer.innerHTML = topItems.map(d => `
+            <div onclick="openExploreDetail(${d.id})" class="min-w-[220px] h-36 rounded-[24px] relative overflow-hidden bg-gray-800 text-white shadow-md snap-center cursor-pointer btn-soft img-gradient">
+                <img src="${d.img}" class="w-full h-full object-cover absolute inset-0 mix-blend-overlay opacity-80">
+                <div class="absolute bottom-3 left-4 right-4 z-10">
+                    <span class="bg-primary px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider mb-1 inline-block">${d.cat}</span>
+                    <h4 class="font-heading font-bold text-sm leading-tight line-clamp-1 mb-1 shadow-sm">${d.name}</h4>
+                    <p class="text-[10px] font-medium flex items-center gap-1"><span class="text-yellow-400">⭐ ${d.rating}</span> • ${d.price}</p>
+                </div>
+            </div>
+        `).join('');
+
+        nearbyContainer.innerHTML = filtered.map(d => `
+            <div onclick="openExploreDetail(${d.id})" class="flex gap-4 p-3 bg-surface border border-border_color rounded-3xl shadow-sm cursor-pointer btn-soft">
+                <div class="w-20 h-20 rounded-2xl bg-gray-200 shrink-0 overflow-hidden relative">
+                    <img src="${d.img}" class="w-full h-full object-cover">
+                    <div class="absolute top-1 left-1 bg-white/90 backdrop-blur text-primary text-[8px] px-1.5 py-0.5 rounded font-bold">⭐ ${d.rating}</div>
+                </div>
+                <div class="flex-1 py-1">
+                    <h4 class="font-bold text-sm text-text_main leading-tight mb-1 line-clamp-1">${d.name}</h4>
+                    <p class="text-[10px] text-text_muted mb-2 flex items-center gap-1"><span class="material-symbols-rounded text-[12px]">map</span> ${d.dist} • ${d.cat}</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-xs font-bold text-cta">${d.price}</span>
+                        <span class="text-[10px] font-bold text-primary flex items-center gap-0.5">Details <span class="material-symbols-rounded text-[12px]">chevron_right</span></span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterExplore(filter, btnEl) {
+        document.querySelectorAll('.explore-btn').forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white');
+            btn.classList.add('bg-surface', 'text-text_muted');
+        });
+        btnEl.classList.remove('bg-surface', 'text-text_muted');
+        btnEl.classList.add('bg-primary', 'text-white');
+        renderExploreData(filter);
+    }
+
+    function openExploreDetail(id) {
+        const data = exploreData.find(d => d.id === id);
+        if(!data) return;
+
+        document.getElementById('exp-det-img').src = data.img;
+        document.getElementById('exp-det-title').innerText = data.name;
+        document.getElementById('exp-det-rating').innerHTML = `<span class="material-symbols-rounded text-[14px]">star</span> ${data.rating}`;
+        document.getElementById('exp-det-loc').innerText = data.loc;
+        document.getElementById('exp-det-desc').innerHTML = data.desc;
+        document.getElementById('exp-det-dist').innerText = `${data.dist} dari lokasi Anda`;
+        document.getElementById('exp-det-price').innerHTML = `${data.price}`;
+
+        // Gallery interaktif zoom
+        document.getElementById('exp-det-gallery').innerHTML = `
+            <div class="min-w-[80px] h-20 rounded-xl overflow-hidden snap-center bg-gray-200 shadow-sm border border-border_color cursor-zoom-in btn-soft" onclick="openImageViewer('${data.img}')"><img src="${data.img}" class="w-full h-full object-cover"></div>
+            <div class="min-w-[80px] h-20 rounded-xl overflow-hidden snap-center bg-gray-200 shadow-sm border border-border_color cursor-zoom-in btn-soft" onclick="openImageViewer('https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=400&q=80')"><img src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=200&q=80" class="w-full h-full object-cover"></div>
+            <div class="min-w-[80px] h-20 rounded-xl overflow-hidden snap-center bg-gray-200 shadow-sm border border-border_color cursor-zoom-in btn-soft" onclick="openImageViewer('https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=400&q=80')"><img src="https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=200&q=80" class="w-full h-full object-cover"></div>
+            <div class="min-w-[80px] h-20 rounded-xl overflow-hidden snap-center bg-gray-200 relative flex items-center justify-center shadow-sm border border-border_color cursor-zoom-in btn-soft" onclick="openImageViewer('https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=200&q=80" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center"><span class="text-white font-bold text-sm">5+</span></div>
+            </div>
+        `;
+
+        const btnSave = document.getElementById('btn-save-explore'); 
+        btnSave.classList.remove('saved', 'bg-white', 'text-yellow-400'); btnSave.classList.add('bg-white/20', 'text-white');
+        btnSave.querySelector('span').style.fontVariationSettings = "'FILL' 0";
+        openSubPage('page-explore-detail');
+    }
+
+    function toggleSavePlace(btn) {
+        const icon = btn.querySelector('span'); btn.classList.toggle('saved');
+        if (btn.classList.contains('saved')) {
+            icon.style.fontVariationSettings = "'FILL' 1"; btn.classList.remove('bg-white/20', 'text-white'); btn.classList.add('bg-white', 'text-yellow-400', 'anim-pop');
+            document.getElementById('modal-bookmark-success').style.display = 'flex';
+            setTimeout(() => btn.classList.remove('anim-pop'), 400); 
+        } else {
+            icon.style.fontVariationSettings = "'FILL' 0"; btn.classList.remove('bg-white', 'text-yellow-400'); btn.classList.add('bg-white/20', 'text-white'); showToast('Dihapus dari simpanan');
+        }
+    }
+
+    function closeBookmarkModal() { document.getElementById('modal-bookmark-success').style.display = 'none'; }
+    
+    // Zoom Gallery Image Viewer
+    function openImageViewer(src) {
+        document.getElementById('viewer-img').src = src;
+        const viewer = document.getElementById('image-viewer');
+        viewer.style.display = 'flex';
+        setTimeout(() => viewer.classList.remove('opacity-0'), 10);
+    }
+    function closeImageViewer() {
+        const viewer = document.getElementById('image-viewer');
+        viewer.classList.add('opacity-0');
+        setTimeout(() => {
+            viewer.classList.add('hidden');
+            viewer.classList.remove('flex');
+        }, 300);
+    }
+</script>
+</body>
+</html>
